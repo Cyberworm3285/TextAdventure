@@ -289,16 +289,24 @@ namespace TextAdventure
             }
             switch(args[0])
             {
-                case "open":
+                case "location":
+                    Location loc = Array.Find(locMaster.locations, l => l.name == args[2]);
                     switch (args[1])
                     {
-                        case "location":
-                            Location loc = Array.Find(locMaster.locations,l=>l.name == args[2]);
-                            Console.WriteLine(((loc==null)?"kein gültiger parameter für 'open location': ":"location opened: ") + args[2]);
+                        case "open":
+                            Console.WriteLine(((loc==null)?"kein gültiger parameter für 'location open': ":"location opened: ") + args[2]);
                             if (loc != null)
                             {
                                 loc.open = true;
                             }
+                            break;
+                        case "port":
+                            if (loc != null)
+                            {
+                                loc.open = true;
+                                locMaster.switchLoc(loc.name);
+                            }
+                            Console.WriteLine(((loc == null) ? "kein gültiger parameter für 'location port': " : "ported to location: ") + args[2]);
                             break;
                         default:
 
