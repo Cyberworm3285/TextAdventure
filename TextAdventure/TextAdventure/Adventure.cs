@@ -21,74 +21,129 @@ namespace TextAdventure
             itemMaster.setMasters(questMaster,locMaster);
         }
 
+        private void preProcess(List<string> commands)
+        {
+            //goto mitte-goto labor-take;lookat bausatz_1;bausatz_2
+            int counter = 0;
+            while (counter < commands.Count)
+            {
+                string c = commands[counter];
+                string[] arguments = c.Split(new char[] { ' ' });
+                if (arguments[0].IndexOf(";") != -1)
+                {
+                    string[] baseCommands = arguments[0].Split(new char[] { ';' });
+                    string[] tempCommands = new string[baseCommands.Length];
+                    for (int i = 0; i < baseCommands.Length; i++)
+                    {
+                        string commandArgs = "";
+                        for (int j = 1; j < arguments.Length; j++)
+                        {
+                            commandArgs += " " + arguments[j];
+                        }
+                        tempCommands[i] = baseCommands[i] + commandArgs;
+                    }
+                    commands.RemoveAt(counter);
+                    commands.InsertRange(counter, tempCommands);
+                }
+                else counter++;
+            }
+            counter = 0;
+            while (counter < commands.Count)
+            {
+                string c = commands[counter];
+                string[] arguments = c.Split(new char[] { ' ' });
+                if (arguments[arguments.Length - 1].IndexOf(";") != -1)
+                {
+                    string[] baseCommands = arguments[arguments.Length - 1].Split(new char[] { ';' });
+                    string[] tempCommands = new string[baseCommands.Length];
+                    for (int i = 0; i < baseCommands.Length; i++)
+                    {
+                        string commandArgs = "";
+                        for (int j = 0; j < arguments.Length - 1; j++)
+                        {
+                            commandArgs += arguments[j] + " ";
+                        }
+                        tempCommands[i] = commandArgs + baseCommands[i];
+                    }
+                    commands.RemoveAt(counter);
+                    commands.InsertRange(counter, tempCommands);
+                    counter += baseCommands.Length;
+                }
+                else counter++;
+            }
+        }
+
         public bool fetchCommands()
         {
             string command = Console.ReadLine();
-            if (command.Length == 0) { return false; }
-            List<string> commands = command.Split(new char[] { ' ' }).ToList<string>();
-            int i = 0;
-            while (i < commands.Count)
+            if (command.Length == 0)  return false;
+            List<string> commands = command.Split(new char[] { '-' }).ToList<string>();
+            preProcess(commands);
+            foreach(string c in commands)
             {
-                string[] shortCommands = commands[i].Split(new char[] { ';' });
-                if (shortCommands.Length != 1)
-                {
-                    List<string> tempCommands = new List<string>();
-                   // string tempParam = commands[i + 1];
-                    foreach (string s in shortCommands)
-                    {
-                        if (s != "combine")
-                        {
-                            tempCommands.Add(s);
-                            tempCommands.Add(commands[i + 1]);
-                        }
-                        else
-                        {
-                            Console.WriteLine("do not use 'combine' in short commands!");
-                        }
-                    }
-                    commands.RemoveAt(i);
-                    commands.InsertRange(i, tempCommands);
-                }
-                switch (commands[i])
+                string[] arguments = c.Split(new char[] { ' ' });
+                switch (arguments[0])
                 {
                     case "get":
-                        if (commands.Count != i+1) { get(commands[i + 1]); i+=2; }
+                        if (arguments.Length == 2)
+                        { 
+                            get(arguments[1]);
+                        }
                         break;
                     case "use":
-                        if (commands.Count != i+1) { use(commands[i + 1]); i += 2; }
+                        if (arguments.Length == 2)
+                        {
+                            use(arguments[1]);
+                        }
                         break;
                     case "look":
-                        if (commands.Count != i+1) { look(commands[i + 1]); i += 2; }
+                        if (arguments.Length == 2)
+                        {
+                            look(arguments[1]);
+                        }
                         break;
                     case "lookat":
-                        if (commands.Count != i + 1) { lookat(commands[i + 1]); i += 2; }
+                        if (arguments.Length == 2)
+                        {
+                            lookat(arguments[1]);
+                        }
                         break;
                     case "combine":
-                        if (commands.Count != i+1) { combine(commands[i + 1], commands[i + 2]); i += 3; }
+                        if (arguments.Length == 3)
+                        {
+                            combine(arguments[1], arguments[2]);
+                        }
                         break;
                     case "goto":
-                        if (commands.Count != i+1) { go(commands[i + 1]); i += 2; }
+                        if (arguments.Length == 2)
+                        {
+                            go(arguments[1]);
+                        }
                         break;
                     case "take":
-                        if (commands.Count != i + 1) { take(commands[i + 1]); i += 2; }
+                        if (arguments.Length == 2)
+                        {
+                            take(arguments[1]);
+                        }
                         break;
                     case "help":
-                        if (commands.Count != i+1)
-                        { help(commands[i + 1]); i += 2; }
+                        if (arguments.Length == 2)
+                        {
+                            help(arguments[1]);
+                        }
                         else
-                        { help(); }
+                        {
+                            help();
+                        }
                         break;
                     case "dev":
                         List<string> args = new List<string>();
-                        args.AddRange(commands);
+                        args.AddRange(arguments);
                         args.RemoveAt(0);
                         devMode(args.ToArray());
-                        int kasd = 0;
-                        i += commands.Count;
                         break;
                     default:
-                        Console.WriteLine("invalid command:" + commands[i]);
-                        i++;
+                        Console.WriteLine("invalid command:" + c);
                         break;
                 }
             }
@@ -254,10 +309,15 @@ namespace TextAdventure
                             }
                             break;
                         case "get":
-                            Console.WriteLine("quests:");
-                            foreach (Quest q in questMaster.quests)
+                            switch (args[2])
                             {
-                                Console.WriteLine(q.name);
+                                case "all":
+                                    Console.WriteLine("quests:");
+                                    foreach (Quest q in questMaster.quests)
+                                    {
+                                        Console.WriteLine(q.name);
+                                    }
+                                    break;
                             }
                             break;
                     }
