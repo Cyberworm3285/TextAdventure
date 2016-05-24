@@ -253,6 +253,13 @@ namespace TextAdventure
                                 questMaster.startQuest(quest.name);
                             }
                             break;
+                        case "get":
+                            Console.WriteLine("quests:");
+                            foreach (Quest q in questMaster.quests)
+                            {
+                                Console.WriteLine(q.name);
+                            }
+                            break;
                     }
                     break;
                 default:
