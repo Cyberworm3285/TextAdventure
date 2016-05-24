@@ -12,7 +12,10 @@ namespace TextAdventure
         static void Main(string[] args)
         {
             Program p = new Program();
-            while (p.gui.fetchCommands()) { }
+            while (p.gui.fetchCommands())
+            {
+
+            }
         }
     }
 }
