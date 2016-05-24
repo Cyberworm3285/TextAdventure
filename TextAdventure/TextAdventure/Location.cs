@@ -6,23 +6,47 @@ using System.Threading.Tasks;
 
 namespace TextAdventure
 {
+    /// <summary>
+    ///     Handler für <see cref="Location"/>s
+    /// </summary>
     public class LocationMaster
     {
+        /// <summary>
+        ///     Für Austausch untereinander
+        /// </summary>
         private QuestMaster qMaster;
+        /// <summary>
+        ///     Für Austausch untereinander
+        /// </summary>
         private ItemMaster iMaster;
+        /// <summary>
+        ///     Momentan aktive <see cref="Location"/>
+        /// </summary>
         public Location currLoc;
 
+        /// <summary>
+        ///     Konstruktor, der die aktive Position auf die erste <see cref="Location"/> setzt
+        /// </summary>
         public LocationMaster()
         {
             currLoc = locations[0];
         }
 
+        /// <summary>
+        ///     Methode, die die Zwischenbindungen unter den Handlern setzt
+        /// </summary>
+        /// <param name="loc"><see cref="LocationMaster"/></param>
+        /// <param name="i"><see cref="ItemMaster"/></param>
         public void setMasters(QuestMaster q, ItemMaster i)
         {
             qMaster = q;
             iMaster = i;
         }
 
+        /// <summary>
+        ///     Beendet die <see cref="Quest"/>s der angegebenen <see cref="Location"/>
+        /// </summary>
+        /// <param name="loc">Die <see cref="Location"/></param>
         private void completeOnDisvover(Location loc)
         {
             if (loc.completeOnDisvover != null)
@@ -35,6 +59,10 @@ namespace TextAdventure
             }
         }
 
+        /// <summary>
+        ///     Startet die <see cref="Quest"/>s der angegebenen <see cref="Location"/>
+        /// </summary>
+        /// <param name="loc">Die <see cref="Location"/></param>
         private void startOnDiscover(Location loc)
         {
             if (loc.startOnDiscover != null)
@@ -47,6 +75,10 @@ namespace TextAdventure
             }
         }
 
+        /// <summary>
+        ///     Wechselt die <see cref="Location"/>
+        /// </summary>
+        /// <param name="name">Name der neuen <see cref="Location"/></param>
         public void switchLoc(string name)
         {
             Location loc = Array.Find(locations, l => l.name == name);
@@ -66,6 +98,10 @@ namespace TextAdventure
             Console.WriteLine("your current location: " + currLoc.name);
         }
 
+        /// <summary>
+        ///     Entdeckt die angegebene <see cref="Location"/>
+        /// </summary>
+        /// <param name="loc">Name der zu entdeckenden <see cref="Location"/></param>
         private void discover(Location loc)
         {
             loc.discovered = true;
@@ -74,6 +110,9 @@ namespace TextAdventure
             startOnDiscover(loc);
         }
 
+        /// <summary>
+        ///     <see cref="Array"/> aller <see cref="Location"/>s
+        /// </summary>
         public Location[] locations = new Location[]
         {
             new Location
@@ -132,6 +171,10 @@ namespace TextAdventure
             }
         };
     }
+
+    /// <summary>
+    ///     Eigenschafts Sammlung für <see cref="Location"/>s
+    /// </summary>
     public class Location
     {
         public string name;

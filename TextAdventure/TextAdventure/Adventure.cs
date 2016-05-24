@@ -6,12 +6,25 @@ using System.Threading.Tasks;
 
 namespace TextAdventure
 {
+    /// <summary>
+    ///     Behandlung der Konsolen eingaben
+    /// </summary>
     class AdventureGUI
     {
         //look around goto mitte look around take;lookat schluessel goto labor look around take bausatz_1 take bausatz_2 combine bausatz_1 bausatz_2 lookat;use bombe goto höhle look around take;lookat schwansen_modell goto mysteriöser_eingang get inventory get quests
         //playthrough code + easter egg
+
+        /// <summary>
+        ///     Handler für <see cref="Quest"/>
+        /// </summary>
         private QuestMaster questMaster = new QuestMaster();
+        /// <summary>
+        ///     Handler für <see cref="Location"/>
+        /// </summary>
         private LocationMaster locMaster = new LocationMaster();
+        /// <summary>
+        ///     Handler für <see cref="Item"/>
+        /// </summary>
         private ItemMaster itemMaster = new ItemMaster();
 
         public AdventureGUI()
@@ -21,9 +34,14 @@ namespace TextAdventure
             itemMaster.setMasters(questMaster,locMaster);
         }
 
+        /// <summary>
+        ///     wandelt die Roh-Commands in handhabbare Commands um
+        /// </summary>
+        /// <param name="commands">Roh-Commands</param>
         private void preProcess(List<string> commands)
         {
             //goto mitte-goto labor-take;lookat bausatz_1;bausatz_2
+            //zwei Durchläufe für die eigentlichen Commands und ggf die Zielobjekte
             int counter = 0;
             while (counter < commands.Count)
             {
@@ -73,6 +91,10 @@ namespace TextAdventure
             }
         }
 
+        /// <summary>
+        ///     Haupt-Funktion für Input
+        /// </summary>
+        /// <returns></returns>
         public bool fetchCommands()
         {
             string command = Console.ReadLine();

@@ -6,13 +6,28 @@ using System.Threading.Tasks;
 
 namespace TextAdventure
 {
+    /// <summary>
+    ///     Handler für <see cref="Item"/>s
+    /// </summary>
     public class ItemMaster
     {
+        /// <summary>
+        ///     Inventar des Spielers
+        /// </summary>
         public List<Item> inventory = new List<Item>();
+
+        /// <summary>
+        ///     <see cref="Delegate"/> für <see cref="ItemUsage"/>-Funtionen
+        /// </summary>
+        /// <param name="itemName">Zu benutzendes <see cref="Item"/></param>
+        /// <param name="useParam">Sonstige Parameter</param>
         delegate void ItemUsage(string itemName, string useParam);
         private ItemUsage[] useItemActions;
         //Dictionary<string,string> bla = new Dictionary<string, string> {{ } };
 
+        /// <summary>
+        ///     <see cref="Array"/> aller <see cref="Item"/>s
+        /// </summary>
         public Item[] allItems = new Item[]
         {
             new Item
@@ -63,20 +78,39 @@ namespace TextAdventure
             }
         };
 
+        /// <summary>
+        ///     Für Austausch untereinander
+        /// </summary>
         private QuestMaster qMaster;
+        /// <summary>
+        ///     Für Austausch untereinander
+        /// </summary>
         private LocationMaster locMaster;
 
+        /// <summary>
+        ///     Füllt den <see cref="ItemUsage"/>-<see cref="Array"/>
+        /// </summary>
         public ItemMaster()
         {
             useItemActions = new ItemUsage[] { item_Open_Door };
         }
 
+        /// <summary>
+        ///     Methode, die die Zwischenbindungen unter den Handlern setzt
+        /// </summary>
+        /// <param name="loc"><see cref="LocationMaster"/></param>
+        /// <param name="i"><see cref="ItemMaster"/></param>
         public void setMasters(QuestMaster q, LocationMaster loc)
         {
             locMaster = loc;
             qMaster = q;
         }
 
+        /// <summary>
+        ///     <see cref="ItemUsage"/>-Methode zum Türen öffnen
+        /// </summary>
+        /// <param name="itemName">Zu benutzendes <see cref="Item"/></param>
+        /// <param name="useParam">Sonstige Parameter</param>
         private void item_Open_Door(string itemName, string useParam)
         {
             if (Array.IndexOf(locMaster.currLoc.usableItems,itemName) != -1)
@@ -88,6 +122,10 @@ namespace TextAdventure
             }
         }
 
+        /// <summary>
+        ///     Schaut auf das angegebene <see cref="Item"/> im Inventar
+        /// </summary>
+        /// <param name="name">Das <see cref="Item"/></param>
         public void lookat(string name)
         {
             Item item = Array.Find(allItems, i => i.name == name);
@@ -101,6 +139,10 @@ namespace TextAdventure
             }
         }
 
+        /// <summary>
+        ///     Benutzt das angegebene <see cref="Item"/> im Inventar
+        /// </summary>
+        /// <param name="name">Das <see cref="Item"/></param>
         public void useItem(string name)
         {
             Item item = inventory.Find(i => i.name == name);
@@ -114,6 +156,10 @@ namespace TextAdventure
             }
         }
 
+        /// <summary>
+        ///     Hebt ein Item aus der aktuellen <see cref="Location"/> auf
+        /// </summary>
+        /// <param name="name">Das <see cref="Item"/></param>
         public void takeItem(string name)
         {
             int index = locMaster.currLoc.obtainableItems.IndexOf(name);
@@ -147,6 +193,12 @@ namespace TextAdventure
             }
         }
 
+        /// <summary>
+        ///     Kombiniert 2 <see cref="Item"/>s aus dem Inventar
+        /// </summary>
+        /// <param name="name1">Name des ersten <see cref="Item"/>s</param>
+        /// <param name="name2">Name des zweiten <see cref="Item"/>s</param>
+        /// <returns>Erfolg</returns>
         public bool combineItems(string name1, string name2)
         {
             Item item1, item2;
@@ -185,6 +237,10 @@ namespace TextAdventure
             }
         }    
     }
+
+    /// <summary>
+    ///     Eigenschafts Sammlung für <see cref="Item"/>s
+    /// </summary>
     public class Item
     {
         public string combinabelWith, combinableTo;
