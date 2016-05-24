@@ -164,6 +164,12 @@ namespace TextAdventure
                         args.RemoveAt(0);
                         devMode(args.ToArray());
                         break;
+                    case "exit":
+                        if (arguments[1] == "game")
+                        {
+                            return false;
+                        }
+                        break;
                     default:
                         Console.WriteLine("invalid command:" + c);
                         break;
