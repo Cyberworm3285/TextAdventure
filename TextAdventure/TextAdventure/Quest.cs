@@ -6,17 +6,35 @@ using System.Threading.Tasks;
 
 namespace TextAdventure
 {
+    /// <summary>
+    ///     Handler für <see cref="Quest"/>s
+    /// </summary>
     public class QuestMaster
     {
+        /// <summary>
+        ///     Für Austausch untereinander
+        /// </summary>
         private LocationMaster locMaster;
+        /// <summary>
+        ///     Für Austausch untereinander
+        /// </summary>
         private ItemMaster iMaster;
 
+        /// <summary>
+        ///     Methode, die die Zwischenbindungen unter den Handlern setzt
+        /// </summary>
+        /// <param name="loc"><see cref="LocationMaster"/></param>
+        /// <param name="i"><see cref="ItemMaster"/></param>
         public void setMasters(LocationMaster loc, ItemMaster i)
         {
             locMaster = loc;
             iMaster = i;
         }
 
+        /// <summary>
+        ///     Arbeitet Events beim start einer Quest ab
+        /// </summary>
+        /// <param name="name">Name der <see cref="Quest"/></param>
         public void onStartQuest(string name)
         {
             Quest quest = Array.Find(quests, q => q.name == name);
@@ -42,6 +60,10 @@ namespace TextAdventure
             }
         }
 
+        /// <summary>
+        ///     Arbeitet Events beim beenden einer Quest ab
+        /// </summary>
+        /// <param name="name">Name der <see cref="Quest"/></param>
         public void onFinishQuest(string name)
         {
             Quest quest = Array.Find(quests, q => q.name == name);
@@ -74,6 +96,10 @@ namespace TextAdventure
             }
         }
 
+        /// <summary>
+        ///     Beendet die <see cref="Quest"/>
+        /// </summary>
+        /// <param name="name">Name der <see cref="Quest"/></param>
         public void completeQuest(string name)
         {
             Quest quest = Array.Find(quests, q => q.name == name);
@@ -103,6 +129,10 @@ namespace TextAdventure
             onFinishQuest(name);
         }
 
+        /// <summary>
+        ///     Startet die <see cref="Quest"/>
+        /// </summary>
+        /// <param name="name">Name <see cref="Quest"/></param>
         public void startQuest(string name)
         {
             Quest quest = Array.Find(quests, q => q.name == name);
@@ -111,6 +141,9 @@ namespace TextAdventure
             onStartQuest(name);
         }
 
+        /// <summary>
+        ///     <see cref="Array"/> aller <see cref="Quest"/>s
+        /// </summary>
         public Quest[] quests = new Quest[]
         {
             new Quest
@@ -149,6 +182,10 @@ namespace TextAdventure
             },
         };
     }
+
+    /// <summary>
+    ///     Eigenschafts Sammlung für <see cref="Quest"/>s
+    /// </summary>
     public class Quest
     {
         public string name;
