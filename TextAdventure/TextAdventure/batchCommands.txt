@@ -1,0 +1,7 @@
+goto>mitte
+goto>labor
+take>bausatz_1;bausatz_2
+combine>bausatz_1>bausatz_2
+use>bombe
+goto>höhle
+goto>ende

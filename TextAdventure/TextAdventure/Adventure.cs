@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.IO;
 
 namespace TextAdventure
 {
@@ -27,6 +28,8 @@ namespace TextAdventure
         /// </summary>
         private ItemMaster itemMaster = new ItemMaster();
         private char commandDivider = '-', argDivider = '>';
+        private string batchPathBase = Path.Combine(Directory.GetParent(Directory.GetCurrentDirectory()).Parent.FullName);
+        private string batchPathFileName = "batchCommands.txt";
 
         public AdventureGUI()
         {
@@ -96,9 +99,9 @@ namespace TextAdventure
         ///     Haupt-Funktion für Input
         /// </summary>
         /// <returns></returns>
-        public bool fetchCommands()
+        public bool fetchCommands(string fixCommand="")
         {
-            string command = Console.ReadLine();
+            string command = (fixCommand=="")?Console.ReadLine():fixCommand;
             if (command.Length == 0)  return false;
             List<string> commands = command.Split(new char[] { commandDivider }).ToList<string>();
             preProcess(commands);
@@ -283,11 +286,6 @@ namespace TextAdventure
 
         private void devMode(string[] args)
         {
-            if (args.Length < 3)
-            {
-                Console.WriteLine("zu wenig parameter in befehl: dev");
-                return;
-            }
             switch(args[0])
             {
                 case "location":
@@ -468,6 +466,32 @@ namespace TextAdventure
                                 argDivider = args[2][0];
                                 Console.WriteLine("new arg-divider: " + argDivider);
                             }
+                            break;
+                    }
+                    break;
+                case "batch":
+                    switch(args[1])
+                    {
+                        case "load":
+                            try
+                            {
+                                string[] batchCommands = File.ReadAllLines(Path.Combine(batchPathBase, batchPathFileName));
+                                foreach (string s in batchCommands)
+                                {
+                                    fetchCommands(s);
+                                }
+                            }
+                            catch(FileNotFoundException ex)
+                            {
+                                Console.WriteLine("file not found: " + Path.Combine(batchPathBase,batchPathFileName));
+                            }
+                            break;
+                        case "change_filename":
+                            batchPathFileName = args[2];
+                            Console.WriteLine("new batchCommand-Filename: " + batchPathFileName);
+                            break;
+                        default:
+                            Console.WriteLine("invalid param in 'dev batch': " + args[1]);
                             break;
                     }
                     break;
