@@ -26,6 +26,7 @@ namespace TextAdventure
         ///     Handler für <see cref="Item"/>
         /// </summary>
         private ItemMaster itemMaster = new ItemMaster();
+        private char commandDivider = '-', argDivider = '>';
 
         public AdventureGUI()
         {
@@ -46,7 +47,7 @@ namespace TextAdventure
             while (counter < commands.Count)
             {
                 string c = commands[counter];
-                string[] arguments = c.Split(new char[] { ' ' });
+                string[] arguments = c.Split(new char[] { argDivider });
                 if (arguments[0].IndexOf(";") != -1)
                 {
                     string[] baseCommands = arguments[0].Split(new char[] { ';' });
@@ -99,11 +100,11 @@ namespace TextAdventure
         {
             string command = Console.ReadLine();
             if (command.Length == 0)  return false;
-            List<string> commands = command.Split(new char[] { '-' }).ToList<string>();
+            List<string> commands = command.Split(new char[] { commandDivider }).ToList<string>();
             preProcess(commands);
             foreach(string c in commands)
             {
-                string[] arguments = c.Split(new char[] { ' ' });
+                string[] arguments = c.Split(new char[] { argDivider });
                 switch (arguments[0])
                 {
                     case "get":
@@ -346,17 +347,71 @@ namespace TextAdventure
                     switch (args[1])
                     {
                         case "complete":
-                            Console.WriteLine(((quest == null) ? "kein gültiger parameter für 'quest complete': " : "completed quest: ") + args[2]);
                             if (quest != null)
                             {
                                 questMaster.completeQuest(quest.name);
                             }
+                            else if (args[2] == "all")
+                            {
+                                foreach (Quest q in questMaster.quests)
+                                {
+                                    questMaster.completeQuest(q.name);
+                                }
+                                Console.WriteLine("completed all active quests");
+                            }
+                            else
+                            {
+                                Console.WriteLine("kein gültiger parameter für 'quest complete': " + args[2]);
+                            }
                             break;
                         case "start":
-                            Console.WriteLine(((quest == null) ? "kein gültiger parameter für 'quest complete': " : "completed quest: ") + args[2]);
                             if (quest != null)
                             {
                                 questMaster.startQuest(quest.name);
+                            }
+                            else if (args[2] == "all")
+                            {
+                                foreach (Quest q in questMaster.quests)
+                                {
+                                    questMaster.startQuest(q.name);
+                                }
+                                Console.WriteLine("started all quests");
+                            }
+                            else
+                            {
+                                Console.WriteLine("kein gültiger parameter für 'quest start': " + args[2]);
+                            }
+                            break;
+                        case "activate":
+                            if (quest != null)
+                            {
+                                quest.active = true;
+                                Console.WriteLine("activated quest: " + args[2]);
+                            }
+                            else if (args[2] == "all")
+                            {
+                                foreach (Quest q in questMaster.quests)
+                                {
+                                    q.active = true;
+                                }
+                                Console.WriteLine("acrivate all quests");
+                            }
+                            else
+                            {
+                                Console.WriteLine("kein gültiger parameter für 'quest activate': " + args[2]);
+                            }
+                            break;
+                        case "reset":
+                            if(quest != null)
+                            {
+                                questMaster.resetQuest(quest.name);
+                            }
+                            else if (args[2] == "all")
+                            {
+                                foreach(Quest q in questMaster.quests)
+                                {
+                                    questMaster.resetQuest(q.name);
+                                }
                             }
                             break;
                         case "get":
@@ -393,6 +448,25 @@ namespace TextAdventure
                                         }
                                     }
                                     break;
+                            }
+                            break;
+                    }
+                    break;
+                case "set":
+                    switch(args[1])
+                    {
+                        case "command_divider":
+                            if (args.Length == 3)
+                            {
+                                commandDivider = args[2][0];
+                                Console.WriteLine("new command-divider: " + commandDivider);
+                            }
+                            break;
+                        case "arg_divider":
+                            if (args.Length == 3)
+                            {
+                                argDivider = args[2][0];
+                                Console.WriteLine("new arg-divider: " + argDivider);
                             }
                             break;
                     }

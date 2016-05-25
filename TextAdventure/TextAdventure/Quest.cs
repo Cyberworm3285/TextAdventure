@@ -20,6 +20,21 @@ namespace TextAdventure
         /// </summary>
         private ItemMaster iMaster;
 
+        public QuestMaster()
+        {
+            backupQuests = quests;
+        }
+
+        public void resetQuest(string name)
+        {
+            Quest quest = Array.Find(quests, q => q.name == name);
+            Quest backupQuest = Array.Find(backupQuests, q => q.name == name);
+            if ((quests != null) && (backupQuests != null))
+            {
+                quest = backupQuest;
+            }
+        }
+
         /// <summary>
         ///     Methode, die die Zwischenbindungen unter den Handlern setzt
         /// </summary>
@@ -181,6 +196,7 @@ namespace TextAdventure
                 name="david in den arsch treten"
             },
         };
+        private Quest[] backupQuests;
     }
 
     /// <summary>
