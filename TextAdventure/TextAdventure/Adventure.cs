@@ -313,15 +313,30 @@ namespace TextAdventure
                             break;
                     }
                     break;
-                case "give":
+                case "item":
+                    Item item = Array.Find(itemMaster.allItems, i => i.name == args[2]);
                     switch (args[1])
                     {
-                        case "item":
-                            Item item = Array.Find(itemMaster.allItems, i => i.name == args[2]);
-                            Console.WriteLine(((item == null) ? "kein gültiger parameter für 'give item': " : "gave item: ") + args[2]);
+                        case "give":
+                            Console.WriteLine(((item == null) ? "kein gültiger parameter für 'item give': " : "gave item: ") + args[2]);
                             if (item != null)
                             {
                                 itemMaster.inventory.Add(item);
+                            }
+                            break;
+                        case "get_info":
+                            if (item != null)
+                            {
+                                Console.WriteLine("name: " + item.name);
+                                Console.WriteLine("description: " + item.description);
+                                Console.WriteLine("combinable with: " + item.combinabelWith);
+                                Console.WriteLine("combinable to: " + item.combinableTo);
+                                Console.WriteLine("pickupCount: " + item.pickupCount);
+                                Console.WriteLine("finishOnPickup: " + item.finishOnPickUp);
+                                Console.WriteLine("startOnPickup: " + item.startOnPickUp);
+                                Console.WriteLine("usableAt: " + item.usableAt);
+                                Console.WriteLine("usageParam; " + item.usageParam);
+                                Console.WriteLine("usageType: " + item.usageType);
                             }
                             break;
                     }
@@ -352,6 +367,30 @@ namespace TextAdventure
                                     foreach (Quest q in questMaster.quests)
                                     {
                                         Console.WriteLine(q.name);
+                                    }
+                                    break;
+                                default:
+                                    if (args.Length == 3)
+                                    {
+                                        Location locQuest = Array.Find(locMaster.locations, l=>l.name == args[2]);
+                                        if (locQuest != null)
+                                        {
+                                            Console.WriteLine("Quest-Connections in " + locQuest.name);
+                                            Console.WriteLine("complete on discover:");
+                                            foreach(string quests in locQuest.completeOnDisvover)
+                                            {
+                                                Console.WriteLine(quests);
+                                            }
+                                            Console.WriteLine("start on discover:");
+                                            foreach(string quests in locQuest.startOnDiscover)
+                                            {
+                                                Console.WriteLine(quests);
+                                            }
+                                        }
+                                        else
+                                        {
+                                            Console.WriteLine("Location not found: " + args[2]);
+                                        }
                                     }
                                     break;
                             }
