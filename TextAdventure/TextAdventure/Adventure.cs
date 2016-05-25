@@ -57,7 +57,7 @@ namespace TextAdventure
                         string commandArgs = "";
                         for (int j = 1; j < arguments.Length; j++)
                         {
-                            commandArgs += " " + arguments[j];
+                            commandArgs += argDivider + arguments[j];
                         }
                         tempCommands[i] = baseCommands[i] + commandArgs;
                     }
@@ -70,7 +70,7 @@ namespace TextAdventure
             while (counter < commands.Count)
             {
                 string c = commands[counter];
-                string[] arguments = c.Split(new char[] { ' ' });
+                string[] arguments = c.Split(new char[] { argDivider });
                 if (arguments[arguments.Length - 1].IndexOf(";") != -1)
                 {
                     string[] baseCommands = arguments[arguments.Length - 1].Split(new char[] { ';' });
@@ -80,7 +80,7 @@ namespace TextAdventure
                         string commandArgs = "";
                         for (int j = 0; j < arguments.Length - 1; j++)
                         {
-                            commandArgs += arguments[j] + " ";
+                            commandArgs += arguments[j] + argDivider;
                         }
                         tempCommands[i] = commandArgs + baseCommands[i];
                     }
