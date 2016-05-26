@@ -46,52 +46,56 @@ namespace TextAdventure
         {
             //goto mitte-goto labor-take;lookat bausatz_1;bausatz_2
             //zwei Durchläufe für die eigentlichen Commands und ggf die Zielobjekte
-            int counter = 0;
-            while (counter < commands.Count)
+            int commandCounter = 0;
+            int argCounter =0;
+            //geht alle commands durch
+            while (commandCounter < commands.Count)
             {
-                string c = commands[counter];
-                string[] arguments = c.Split(new char[] { argDivider });
-                if (arguments[0].IndexOf(";") != -1)
+                //spaltet diese in ihre Bestandteile auf
+                string[] args = commands[commandCounter].Split(new char[] { argDivider });
+                //geht diese ebenfalls durch
+                while(argCounter < args.Length)
                 {
-                    string[] baseCommands = arguments[0].Split(new char[] { ';' });
-                    string[] tempCommands = new string[baseCommands.Length];
-                    for (int i = 0; i < baseCommands.Length; i++)
+                    //überprüft ob shortCuts benutzt werden
+                    string[] shorts = args[argCounter].Split(new char[] { ';' });
+                    if(shorts.Length != 1)
                     {
-                        string commandArgs = "";
-                        for (int j = 1; j < arguments.Length; j++)
+                        //falls ja wird ein rechteckiger Array mit den Dimensionslängen (anzahl der shortcuts x die Anzahl der Argumente) erstellt
+                        string[][] newCommandArgs = new string[shorts.Length][];
+                        //und ein string Array, in dem nachher die zusammengesetzten commands enthalten sind
+                        string[] newCommands = new string[shorts.Length];
+                        //für jeden shortcut...
+                        for(int i = 0; i < shorts.Length; i++)
                         {
-                            commandArgs += argDivider + arguments[j];
+                            //..wird eine Dimension des Arrays mit allen Argumenten erst kopiert und dann an der stelle der mehrfach-belegung nur mit einem shortcut belegt
+                            //sodass nachher jeder shortcut eine eigene Instanz des gleichen(ausgenommen des shortcut-Arguments) Befehls hat
+                            newCommandArgs[i] = args;
+                            newCommandArgs[i][argCounter] = shorts[i];
+                            newCommands[i] = "";
+                            int j = 0;
+                            //dann werden die Instanzen wieder zu einem Befehls-string vereinigt..
+                            for(; j < newCommandArgs[i].Length-1; j++)
+                            {
+                                newCommands[i] += newCommandArgs[i][j] + argDivider.ToString();
+                            }
+                            newCommands[i] += newCommandArgs[i][j];
                         }
-                        tempCommands[i] = baseCommands[i] + commandArgs;
+                        //..der alte Roh-befehl wird gelöscht..
+                        commands.RemoveAt(commandCounter);
+                        //..und die neuen an dessen Stelle eingefügt
+                        commands.InsertRange(commandCounter,newCommands);
                     }
-                    commands.RemoveAt(counter);
-                    commands.InsertRange(counter, tempCommands);
+                    else
+                    {
+                        //nur wenn keine Seperierung zu machen ist, wird das nächste Argument verarbeitet
+                        argCounter++;
+                    }
                 }
-                else counter++;
-            }
-            counter = 0;
-            while (counter < commands.Count)
-            {
-                string c = commands[counter];
-                string[] arguments = c.Split(new char[] { argDivider });
-                if (arguments[arguments.Length - 1].IndexOf(";") != -1)
+                if(commands[commandCounter].IndexOf(";") != 0)
                 {
-                    string[] baseCommands = arguments[arguments.Length - 1].Split(new char[] { ';' });
-                    string[] tempCommands = new string[baseCommands.Length];
-                    for (int i = 0; i < baseCommands.Length; i++)
-                    {
-                        string commandArgs = "";
-                        for (int j = 0; j < arguments.Length - 1; j++)
-                        {
-                            commandArgs += arguments[j] + argDivider;
-                        }
-                        tempCommands[i] = commandArgs + baseCommands[i];
-                    }
-                    commands.RemoveAt(counter);
-                    commands.InsertRange(counter, tempCommands);
-                    counter += baseCommands.Length;
+                    //wenn es im ganzen Befehl keine Trennungen mehr geben kann, wird zum nächsten Befehl vortgefahren
+                    commandCounter++;
                 }
-                else counter++;
             }
         }
 
