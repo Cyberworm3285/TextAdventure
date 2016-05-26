@@ -47,21 +47,21 @@ namespace TextAdventure
             //goto mitte-goto labor-take;lookat bausatz_1;bausatz_2
             //zwei Durchläufe für die eigentlichen Commands und ggf die Zielobjekte
             int commandCounter = 0;
-            int argCounter =0;
             //geht alle commands durch
             while (commandCounter < commands.Count)
             {
                 //spaltet diese in ihre Bestandteile auf
                 string[] args = commands[commandCounter].Split(new char[] { argDivider });
+                int argCounter = 0;
                 //geht diese ebenfalls durch
-                while(argCounter < args.Length)
+                while (argCounter < args.Length)
                 {
                     //überprüft ob shortCuts benutzt werden
                     string[] shorts = args[argCounter].Split(new char[] { ';' });
                     if(shorts.Length != 1)
                     {
-                        //falls ja wird ein rechteckiger Array mit den Dimensionslängen (anzahl der shortcuts x die Anzahl der Argumente) erstellt
-                        string[][] newCommandArgs = new string[shorts.Length][];
+                        //falls ja wird ein arg-Array erstellt
+                        string[] newCommandArgs;
                         //und ein string Array, in dem nachher die zusammengesetzten commands enthalten sind
                         string[] newCommands = new string[shorts.Length];
                         //für jeden shortcut...
@@ -69,21 +69,23 @@ namespace TextAdventure
                         {
                             //..wird eine Dimension des Arrays mit allen Argumenten erst kopiert und dann an der stelle der mehrfach-belegung nur mit einem shortcut belegt
                             //sodass nachher jeder shortcut eine eigene Instanz des gleichen(ausgenommen des shortcut-Arguments) Befehls hat
-                            newCommandArgs[i] = args;
-                            newCommandArgs[i][argCounter] = shorts[i];
+                            newCommandArgs = args;
+                            newCommandArgs[argCounter] = shorts[i];
                             newCommands[i] = "";
                             int j = 0;
                             //dann werden die Instanzen wieder zu einem Befehls-string vereinigt..
-                            for(; j < newCommandArgs[i].Length-1; j++)
+                            for(; j < newCommandArgs.Length-1; j++)
                             {
-                                newCommands[i] += newCommandArgs[i][j] + argDivider.ToString();
+                                newCommands[i] += newCommandArgs[j] + argDivider.ToString();
                             }
-                            newCommands[i] += newCommandArgs[i][j];
+                            newCommands[i] += newCommandArgs[j];
                         }
                         //..der alte Roh-befehl wird gelöscht..
                         commands.RemoveAt(commandCounter);
                         //..und die neuen an dessen Stelle eingefügt
                         commands.InsertRange(commandCounter,newCommands);
+                        int k=0;
+                        break;
                     }
                     else
                     {
@@ -91,7 +93,7 @@ namespace TextAdventure
                         argCounter++;
                     }
                 }
-                if(commands[commandCounter].IndexOf(";") != 0)
+                if(commands[commandCounter].IndexOf(";") == -1)
                 {
                     //wenn es im ganzen Befehl keine Trennungen mehr geben kann, wird zum nächsten Befehl vortgefahren
                     commandCounter++;
