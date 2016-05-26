@@ -79,10 +79,15 @@ namespace TextAdventure
         ///     Wechselt die <see cref="Location"/>
         /// </summary>
         /// <param name="name">Name der neuen <see cref="Location"/></param>
-        public void switchLoc(string name)
+        public void switchLoc(string name, bool devmode = false)
         {
             Location loc = Array.Find(locations, l => l.name == name);
-            if (loc == null) { loc = Array.Find(locations, l => l.alias == name); }
+            if (loc == null) loc = Array.Find(locations, l => l.alias == name);
+            if (!(currLoc.connections.Contains(loc.name) || devmode))
+            {
+                Console.WriteLine("location not accesible from: " + currLoc.name);
+                return;
+            }
             if (loc == null)
             {
                 Console.WriteLine("Location not avaiable: " + name);
@@ -126,10 +131,10 @@ namespace TextAdventure
             },
             new Location {
                 name = "mitte",
-                alias="gammeltür",
+                alias="gammeltuer",
                 open =true,
                 discovered =false,
-                description ="hier is die midde",
+                description ="hier is die midde, am boden liegt unter dreck ein schluessel",
                 connections = new string[] { "start", "ende", "labor" },
                 completeOnDisvover = new string[] {"Die ersten Schritte"},
                 startOnDiscover = new string[] {"Erreiche das Ende"},
@@ -139,7 +144,7 @@ namespace TextAdventure
             new Location
             {
                 name = "ende",
-                alias = "mysteriöser_eingang",
+                alias = "mysterioeser_eingang",
                 open =false,
                 discovered =false,
                 description ="du hast die welt gerettet und es gibt nichts mehr für dich zu tun außer zu sterben,yo!",
@@ -154,14 +159,14 @@ namespace TextAdventure
                 open =true,
                 discovered =false,
                 description ="Krasse sachen sind hier",
-                connections =new string[] { "mitte","höhle" },
+                connections =new string[] { "mitte","hoehle" },
                 startOnDiscover =new string[] { "bastle was, das wummst!" },
                 obtainableItems = new List<string> { "bausatz_1", "bausatz_2" },
                 usableItems =new string[] { "bombe"}
             },
             new Location
             {
-                name = "höhle" ,
+                name = "hoehle" ,
                 alias = "sprengloch",
                 open =false,
                 discovered =true,

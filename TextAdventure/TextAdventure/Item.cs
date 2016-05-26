@@ -37,12 +37,13 @@ namespace TextAdventure
                 usableAt ="mitte",
                 usageType =0,
                 usageParam ="ende",
-                pickupCount =1
+                pickupCount =1,
+                visible = false
             },
             new Item
             {
                 name ="'du hast das spiel durchgespielt' trophäe",
-                description ="du hast sämtliche hürden überwunden und das abenteuer durchgespielt"
+                description ="du hast sämtliche hürden überwunden und das abenteuer durchgespielt",
             },
             new Item
             {
@@ -50,7 +51,8 @@ namespace TextAdventure
                 description ="ähnelt bausatz 2",
                 pickupCount =1,
                 combinabelWith ="bausatz_2",
-                combinableTo ="bombe"
+                combinableTo ="bombe",
+                visible = true
             },
             new Item
             {
@@ -58,7 +60,8 @@ namespace TextAdventure
                 description ="ähnelt bausatz 1",
                 pickupCount =1,
                 combinabelWith ="bausatz_1",
-                combinableTo ="bombe"
+                combinableTo ="bombe",
+                visible = true,
             },
             new Item
             {
@@ -66,7 +69,7 @@ namespace TextAdventure
                 description ="kann kaputt machen",
                 usableAt ="labor",
                 usageType =0,
-                usageParam ="höhle",
+                usageParam ="hoehle",
                 finishOnPickUp ="bastle was, das wummst!"
             },
             new Item
@@ -74,7 +77,8 @@ namespace TextAdventure
                 name="schwansen_modell",
                 description="ein ca 3mm langes modell von davids schwansen (1000x vergrößerung)",
                 pickupCount=-1,
-                startOnPickUp="david in den arsch treten"
+                startOnPickUp="david in den arsch treten",
+                visible = true,
             }
         };
 
@@ -167,6 +171,7 @@ namespace TextAdventure
         /// <param name="name">Das <see cref="Item"/></param>
         public void takeItem(string name)
         {
+            if (locMaster.currLoc.obtainableItems == null) return;
             int index = locMaster.currLoc.obtainableItems.IndexOf(name);
             if (index != -1)
             {
@@ -257,5 +262,6 @@ namespace TextAdventure
         public int pickupCount=-1;
         public string startOnPickUp;
         public string finishOnPickUp;
+        public bool visible;
     }
 }

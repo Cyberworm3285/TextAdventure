@@ -36,6 +36,24 @@ namespace TextAdventure
             questMaster.setMasters(locMaster,itemMaster);
             locMaster.setMasters(questMaster,itemMaster);
             itemMaster.setMasters(questMaster,locMaster);
+
+            try
+            {
+                string[] startup = File.ReadAllLines(Path.Combine(batchPathBase,"startUp.txt"));
+                if (startup.Length != 0)
+                {
+                    Console.WriteLine("<startup>");
+                    foreach (string s in startup)
+                    {
+                        fetchCommands(s);
+                    }
+                    Console.WriteLine("</startup>");
+                }
+            }
+            catch(FileNotFoundException ex)
+            {
+                Console.WriteLine("[info] no startup file found");
+            }
         }
 
         /// <summary>
@@ -108,6 +126,7 @@ namespace TextAdventure
         public bool fetchCommands(string fixCommand="")
         {
             string command = (fixCommand=="")?Console.ReadLine():fixCommand;
+            if (fixCommand != "") Console.WriteLine(fixCommand);
             if (command.Length == 0)  return false;
             List<string> commands = command.Split(new char[] { commandDivider }).ToList<string>();
             preProcess(commands);
@@ -238,13 +257,14 @@ namespace TextAdventure
                         Location loc = Array.Find(locMaster.locations, l => l.name == s);
                         Console.WriteLine("    " + ((loc.discovered)?loc.name:loc.alias));
                     }
-                    if (locMaster.currLoc.obtainableItems != null)
+                    if (locMaster.currLoc.obtainableItems == null) return;
+                    Item[] items = Array.FindAll(itemMaster.allItems, i => locMaster.currLoc.obtainableItems.IndexOf(i.name) != -1 && i.visible);
+                    if (items.Length != 0)
                     {
-                        if (locMaster.currLoc.obtainableItems.Count == 0) { break; }
                         Console.WriteLine("Gegenstände:");
-                        foreach (string s in locMaster.currLoc.obtainableItems)
+                        foreach (Item i in items)
                         {
-                            Console.WriteLine("    " + s);
+                            Console.WriteLine(i.name);
                         }
                     }
                     break;
@@ -295,7 +315,8 @@ namespace TextAdventure
             switch(args[0])
             {
                 case "location":
-                    Location loc = Array.Find(locMaster.locations, l => l.name == args[2]);
+                    Location loc = null;
+                    if(args.Length == 3) loc = Array.Find(locMaster.locations, l => l.name == args[2]);
                     switch (args[1])
                     {
                         case "open":
@@ -309,12 +330,47 @@ namespace TextAdventure
                             if (loc != null)
                             {
                                 loc.open = true;
-                                locMaster.switchLoc(loc.name);
+                                locMaster.switchLoc(loc.name,true);
                             }
                             Console.WriteLine(((loc == null) ? "kein gültiger parameter für 'location port': " : "ported to location: ") + args[2]);
                             break;
+                        case "get_info":
+                            if (loc == null) loc = locMaster.currLoc;
+                            Console.WriteLine(
+                                "name: " + loc.name + "\n" +
+                                "description: " + loc.description + "\n" +
+                                "alias: " + loc.alias + "\n" +
+                                "denial Message: " + loc.denialMessage + "\n" +
+                                "discovered: " + loc.discovered + "\n" +
+                                "open: " + loc.open + "\n" +
+                                "completeOnDicover:");
+                            foreach(string s in loc.completeOnDisvover??new string[] { "-" })
+                            {
+                                Console.WriteLine(s);
+                            }
+                            Console.WriteLine("connections:");
+                            foreach(string s in loc.connections ?? new string[] { "-" })
+                            {
+                                Console.WriteLine(s);
+                            }
+                            Console.WriteLine("obtainableItems:");
+                            foreach(string s in loc.obtainableItems ?? new List<string> { "-" })
+                            {
+                                Console.WriteLine(s);
+                            }
+                            Console.WriteLine("startOnDiscover:");
+                            foreach(string s in loc.startOnDiscover ?? new string[] { "-" })
+                            {
+                                Console.WriteLine(s);
+                            }
+                            Console.WriteLine("usableItems:");
+                            foreach(string s in loc.usableItems ?? new string[] { "-" })
+                            {
+                                Console.WriteLine(s);
+                            }
+                            break;
                         default:
-
+                            
                             break;
                     }
                     break;
@@ -396,9 +452,9 @@ namespace TextAdventure
                             {
                                 foreach (Quest q in questMaster.quests)
                                 {
+                                    Console.WriteLine((q.active)?q.name+" is already active":"activated "+q.name);
                                     q.active = true;
                                 }
-                                Console.WriteLine("acrivate all quests");
                             }
                             else
                             {
@@ -463,14 +519,14 @@ namespace TextAdventure
                             if (args.Length == 3)
                             {
                                 commandDivider = args[2][0];
-                                Console.WriteLine("new command-divider: " + commandDivider);
+                                Console.WriteLine("new command-divider: '" + commandDivider + "'");
                             }
                             break;
                         case "arg_divider":
                             if (args.Length == 3)
                             {
                                 argDivider = args[2][0];
-                                Console.WriteLine("new arg-divider: " + argDivider);
+                                Console.WriteLine("new arg-divider: '" + argDivider + "'");
                             }
                             break;
                     }
@@ -502,7 +558,7 @@ namespace TextAdventure
                     }
                     break;
                 default:
-
+                    Console.WriteLine("invalid command: " + args[0]);
                     break;
             }
         }
