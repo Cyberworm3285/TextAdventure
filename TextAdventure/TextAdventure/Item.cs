@@ -149,10 +149,15 @@ namespace TextAdventure
             if (item == null)
             {
                 Console.WriteLine("could not find item: " + name);
+                return;
             }
             if (item.usableAt == locMaster.currLoc.name)
             {
                 useItemActions[item.usageType](name, item.usageParam);
+            }
+            else
+            {
+                Console.WriteLine("you cannot use that item here: " + item.name);
             }
         }
 
