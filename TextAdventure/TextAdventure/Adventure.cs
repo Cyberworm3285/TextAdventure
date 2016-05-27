@@ -27,16 +27,19 @@ namespace TextAdventure
         ///     Handler für <see cref="Item"/>
         /// </summary>
         private ItemMaster itemMaster = new ItemMaster();
+        private NPC_Master npcMaster = new NPC_Master();
+        private DialogueMaster diaMaster = new DialogueMaster();
         private char commandDivider = '-', argDivider = '>';
         private string batchPathBase = Path.Combine(Directory.GetParent(Directory.GetCurrentDirectory()).Parent.FullName);
         private string batchPathFileName = "batchCommands.txt";
 
         public AdventureGUI()
         {
-            questMaster.setMasters(locMaster,itemMaster);
-            locMaster.setMasters(questMaster,itemMaster);
-            itemMaster.setMasters(questMaster,locMaster);
-
+            questMaster.setMasters(locMaster, itemMaster, npcMaster, diaMaster);
+            locMaster.setMasters(questMaster, itemMaster, npcMaster, diaMaster);
+            itemMaster.setMasters(questMaster, locMaster, npcMaster, diaMaster);
+            npcMaster.setMasters(questMaster, locMaster, itemMaster, diaMaster);
+            diaMaster.setMasters(questMaster, locMaster, itemMaster, npcMaster);
             try
             {
                 string[] startup = File.ReadAllLines(Path.Combine(batchPathBase,"startUp.txt"));
@@ -102,7 +105,6 @@ namespace TextAdventure
                         commands.RemoveAt(commandCounter);
                         //..und die neuen an dessen Stelle eingefügt
                         commands.InsertRange(commandCounter,newCommands);
-                        int k=0;
                         break;
                     }
                     else
@@ -111,7 +113,7 @@ namespace TextAdventure
                         argCounter++;
                     }
                 }
-                if(commands[commandCounter].IndexOf(";") == -1)
+                if(!commands[commandCounter].Contains(";"))
                 {
                     //wenn es im ganzen Befehl keine Trennungen mehr geben kann, wird zum nächsten Befehl vortgefahren
                     commandCounter++;
@@ -176,6 +178,9 @@ namespace TextAdventure
                         {
                             take(arguments[1]);
                         }
+                        break;
+                    case "talkto":
+                        talktTo(arguments[1]);
                         break;
                     case "help":
                         if (arguments.Length == 2)
@@ -257,14 +262,25 @@ namespace TextAdventure
                         Location loc = Array.Find(locMaster.locations, l => l.name == s);
                         Console.WriteLine("    " + ((loc.discovered)?loc.name:loc.alias));
                     }
-                    if (locMaster.currLoc.obtainableItems == null) return;
-                    Item[] items = Array.FindAll(itemMaster.allItems, i => locMaster.currLoc.obtainableItems.IndexOf(i.name) != -1 && i.visible);
-                    if (items.Length != 0)
+                    if (locMaster.currLoc.obtainableItems != null)
                     {
-                        Console.WriteLine("Gegenstände:");
-                        foreach (Item i in items)
+                        Item[] items = Array.FindAll(itemMaster.allItems, i => locMaster.currLoc.obtainableItems.Contains(i.name) && i.visible);
+                        if (items.Length != 0)
                         {
-                            Console.WriteLine(i.name);
+                            Console.WriteLine("Gegenstände:");
+                            foreach (Item i in items)
+                            {
+                                Console.WriteLine(i.name);
+                            }
+                        }
+                    }
+                    NPC[] npcs = Array.FindAll(npcMaster.npcs, n => n.currLoc == locMaster.currLoc.name);
+                    if (npcs.Length != 0)
+                    {
+                        Console.WriteLine("NPCs:");
+                        foreach(NPC n in npcs)
+                        {
+                            Console.WriteLine("    " + n.name);
                         }
                     }
                     break;
@@ -292,6 +308,12 @@ namespace TextAdventure
         private void take(string param)
         {
             itemMaster.takeItem(param);
+        }
+
+        private void talktTo(string param)
+        {
+            //ACHTUNG! diese Funktion enthät ein eigenes Input-Handling in startDialogue()
+            npcMaster.talkTo(param);
         }
 
         private void help(string param = "")
@@ -403,7 +425,8 @@ namespace TextAdventure
                     }
                     break;
                 case "quest":
-                    Quest quest = Array.Find(questMaster.quests, q => q.name == args[2]);
+                    Quest quest = null;
+                    if (args.Length == 3) quest = Array.Find(questMaster.quests, q => q.name == args[2]);
                     switch (args[1])
                     {
                         case "complete":
@@ -442,17 +465,36 @@ namespace TextAdventure
                                 Console.WriteLine("kein gültiger parameter für 'quest start': " + args[2]);
                             }
                             break;
-                        case "activate":
+                        case "deactivate":
                             if (quest != null)
                             {
-                                quest.active = true;
-                                Console.WriteLine("activated quest: " + args[2]);
+                                quest.active = false;
+                                Console.WriteLine("deactivated quest: '" + args[2] + "'");
                             }
                             else if (args[2] == "all")
                             {
                                 foreach (Quest q in questMaster.quests)
                                 {
-                                    Console.WriteLine((q.active)?q.name+" is already active":"activated "+q.name);
+                                    Console.WriteLine((!q.active) ? "'" + q.name + "' is already deactivated" : "deactivated '" + q.name + "'");
+                                    q.active = false;
+                                }
+                            }
+                            else
+                            {
+                                Console.WriteLine("kein gültiger parameter für 'quest deactivate': " + args[2]);
+                            }
+                            break;
+                        case "activate":
+                            if (quest != null)
+                            {
+                                quest.active = true;
+                                Console.WriteLine("activated quest: '" + args[2] + "'");
+                            }
+                            else if (args[2] == "all")
+                            {
+                                foreach (Quest q in questMaster.quests)
+                                {
+                                    Console.WriteLine((q.active)?"'"+q.name+"' is already active":"activated '" + q.name + "'");
                                     q.active = true;
                                 }
                             }

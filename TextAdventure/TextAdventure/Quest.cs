@@ -18,7 +18,9 @@ namespace TextAdventure
         /// <summary>
         ///     Für Austausch untereinander
         /// </summary>
-        private ItemMaster iMaster;
+        private ItemMaster itemMaster;
+        private NPC_Master npcMaster;
+        private DialogueMaster diaMaster;
 
         public QuestMaster()
         {
@@ -40,10 +42,12 @@ namespace TextAdventure
         /// </summary>
         /// <param name="loc"><see cref="LocationMaster"/></param>
         /// <param name="i"><see cref="ItemMaster"/></param>
-        public void setMasters(LocationMaster loc, ItemMaster i)
+        public void setMasters(LocationMaster l, ItemMaster i, NPC_Master n, DialogueMaster d)
         {
-            locMaster = loc;
-            iMaster = i;
+            locMaster = l;
+            itemMaster = i;
+            npcMaster = n;
+            diaMaster = d;
         }
 
         /// <summary>
@@ -135,10 +139,10 @@ namespace TextAdventure
                 int counter = 0;
                 foreach(string s in quest.itemReward)
                 {
-                    newItems[counter] = Array.Find(iMaster.allItems, i => i.name == s);
+                    newItems[counter] = Array.Find(itemMaster.allItems, i => i.name == s);
                     Console.WriteLine("        " + s);
                 }
-                iMaster.inventory.AddRange(newItems);
+                itemMaster.inventory.AddRange(newItems);
             }
             quest.active = false;
             onFinishQuest(name);
