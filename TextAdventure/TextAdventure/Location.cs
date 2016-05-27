@@ -14,11 +14,15 @@ namespace TextAdventure
         /// <summary>
         ///     Für Austausch untereinander
         /// </summary>
-        private QuestMaster qMaster;
+        private QuestMaster questMaster;
         /// <summary>
         ///     Für Austausch untereinander
         /// </summary>
-        private ItemMaster iMaster;
+        private ItemMaster itemMaster;
+
+        private NPC_Master npcMaster;
+        private DialogueMaster diaMaster;
+
         /// <summary>
         ///     Momentan aktive <see cref="Location"/>
         /// </summary>
@@ -37,10 +41,12 @@ namespace TextAdventure
         /// </summary>
         /// <param name="loc"><see cref="LocationMaster"/></param>
         /// <param name="i"><see cref="ItemMaster"/></param>
-        public void setMasters(QuestMaster q, ItemMaster i)
+        public void setMasters(QuestMaster q, ItemMaster i, NPC_Master n, DialogueMaster d)
         {
-            qMaster = q;
-            iMaster = i;
+            questMaster = q;
+            itemMaster = i;
+            npcMaster = n;
+            diaMaster = d;
         }
 
         /// <summary>
@@ -53,8 +59,8 @@ namespace TextAdventure
             {
                 foreach (string s in loc.completeOnDisvover)
                 {
-                    Quest quest = Array.Find(qMaster.quests, q => q.name == s);
-                    qMaster.completeQuest(quest.name);
+                    Quest quest = Array.Find(questMaster.quests, q => q.name == s);
+                    questMaster.completeQuest(quest.name);
                 }
             }
         }
@@ -69,8 +75,8 @@ namespace TextAdventure
             {
                 foreach (string s in loc.startOnDiscover)
                 {
-                    Quest quest = Array.Find(qMaster.quests, q => q.name == s);
-                    qMaster.startQuest(quest.name);
+                    Quest quest = Array.Find(questMaster.quests, q => q.name == s);
+                    questMaster.startQuest(quest.name);
                 }
             }
         }
@@ -172,7 +178,7 @@ namespace TextAdventure
                 discovered =true,
                 description ="mit glück vlt ein umweg",
                 connections =new string[] {"ende" },
-                obtainableItems = new List<string> {"schwansen_modell"},
+               // obtainableItems = new List<string> {"schwansen_modell"},
             }
         };
     }

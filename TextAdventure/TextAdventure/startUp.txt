@@ -1,1 +1,2 @@
 dev>set>command_divider>.
+dev>batch>load

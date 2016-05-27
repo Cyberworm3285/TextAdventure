@@ -85,11 +85,13 @@ namespace TextAdventure
         /// <summary>
         ///     Für Austausch untereinander
         /// </summary>
-        private QuestMaster qMaster;
+        private QuestMaster questMaster;
         /// <summary>
         ///     Für Austausch untereinander
         /// </summary>
         private LocationMaster locMaster;
+        private NPC_Master npcMaster;
+        private DialogueMaster diaMaster;
 
         /// <summary>
         ///     Füllt den <see cref="ItemUsage"/>-<see cref="Array"/>
@@ -104,10 +106,12 @@ namespace TextAdventure
         /// </summary>
         /// <param name="loc"><see cref="LocationMaster"/></param>
         /// <param name="i"><see cref="ItemMaster"/></param>
-        public void setMasters(QuestMaster q, LocationMaster loc)
+        public void setMasters(QuestMaster q, LocationMaster l, NPC_Master n, DialogueMaster d)
         {
-            locMaster = loc;
-            qMaster = q;
+            locMaster = l;
+            questMaster = q;
+            npcMaster = n;
+            diaMaster = d;
         }
 
         /// <summary>
@@ -117,7 +121,7 @@ namespace TextAdventure
         /// <param name="useParam">Sonstige Parameter</param>
         private void item_Open_Door(string itemName, string useParam)
         {
-            if (Array.IndexOf(locMaster.currLoc.usableItems,itemName) != -1)
+            if (locMaster.currLoc.usableItems.Contains(itemName))
             {
                 Location loc = Array.Find(locMaster.locations, l => l.name == useParam);
                 loc.open = true;
@@ -182,14 +186,14 @@ namespace TextAdventure
                 {
                     if (newItem.finishOnPickUp != "")
                     {
-                        qMaster.completeQuest(newItem.finishOnPickUp);
+                        questMaster.completeQuest(newItem.finishOnPickUp);
                     }
                 }
                 if (newItem.startOnPickUp != null)
                 {
                     if (newItem.startOnPickUp != "")
                     {
-                        qMaster.startQuest(newItem.startOnPickUp);
+                        questMaster.startQuest(newItem.startOnPickUp);
                     }
                 }
                 if (--newItem.pickupCount == 0)
@@ -231,7 +235,7 @@ namespace TextAdventure
                 {
                     if (newItem.finishOnPickUp != "")
                     {
-                        qMaster.completeQuest(newItem.finishOnPickUp);
+                        questMaster.completeQuest(newItem.finishOnPickUp);
                     }
                 }
                 inventory.Add(newItem);
