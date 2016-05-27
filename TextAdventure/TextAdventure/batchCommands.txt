@@ -1,2 +1,13 @@
-dev>location>port>hoehle
+look>around
+goto>gammeltuer
+look>around
+take;lookat>schluessel
+goto>flackernder_flur
+look>around
+take;lookat>bausatz_1;bausatz_2
+combine>bausatz_1>bausatz_2
+lookat>bombe
+use>bombe
+look>around
+goto>hoehle
 look>around

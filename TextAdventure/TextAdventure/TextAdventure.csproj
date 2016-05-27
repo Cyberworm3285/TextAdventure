@@ -41,6 +41,9 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
+    <Reference Include="YAXLib">
+      <HintPath>..\..\..\..\..\Desktop\Loot2 - Kopie\Loot2\Loot2\Net45\YAXLib.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Adventure.cs" />

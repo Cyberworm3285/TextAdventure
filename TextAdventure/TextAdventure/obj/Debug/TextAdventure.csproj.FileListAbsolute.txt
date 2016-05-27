@@ -10,3 +10,6 @@ C:\Users\cyber\Source\Repos\TextAdventure\TextAdventure\TextAdventure\obj\Debug\
 C:\Users\cyber\Source\Repos\TextAdventure\TextAdventure\TextAdventure\bin\Debug\TextAdventure.exe
 C:\Users\cyber\Source\Repos\TextAdventure\TextAdventure\TextAdventure\bin\Debug\TextAdventure.pdb
 C:\Users\cyber\Source\Repos\TextAdventure\TextAdventure\TextAdventure\obj\Debug\TextAdventure.csprojResolveAssemblyReference.cache
+C:\Users\cyber\Source\Repos\TextAdventure\TextAdventure\TextAdventure\bin\Debug\YAXLib.dll
+C:\Users\cyber\Source\Repos\TextAdventure\TextAdventure\TextAdventure\bin\Debug\YAXLib.pdb
+C:\Users\cyber\Source\Repos\TextAdventure\TextAdventure\TextAdventure\bin\Debug\YAXLib.xml

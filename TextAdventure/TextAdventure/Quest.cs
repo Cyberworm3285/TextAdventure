@@ -137,7 +137,7 @@ namespace TextAdventure
                 Console.WriteLine("    item reward:");
                 Item[] newItems = new Item[quest.itemReward.Length];
                 int counter = 0;
-                foreach(string s in quest.itemReward)
+                foreach (string s in quest.itemReward)
                 {
                     newItems[counter] = Array.Find(itemMaster.allItems, i => i.name == s);
                     Console.WriteLine("        " + s);
@@ -163,7 +163,7 @@ namespace TextAdventure
         /// <summary>
         ///     <see cref="Array"/> aller <see cref="Quest"/>s
         /// </summary>
-        public Quest[] quests = new Quest[]
+        public Quest[] quests { get; set; } = new Quest[]
         {
             new Quest
             {
@@ -208,17 +208,17 @@ namespace TextAdventure
     /// </summary>
     public class Quest
     {
-        public string name;
-        public bool finished;
-        public bool active;
-        public string description;
-        public string echoOnStart;
-        public string echoOnFinish;
-        public string[] triggerOnFinish;
-        public string[] openOnStart;
-        public string[] closeOnStart;
-        public string[] openOnFinish;
-        public string[] closeOnFinish;
-        public string[] itemReward;
+        public string name { get; set; }
+        public bool finished { get; set; }
+        public bool active { get; set; }
+        public string description { get; set; }
+        public string echoOnStart { get; set; }
+        public string echoOnFinish { get; set; }
+        public string[] triggerOnFinish { get; set; }
+        public string[] openOnStart { get; set; }
+        public string[] closeOnStart { get; set; }
+        public string[] openOnFinish { get; set; }
+        public string[] closeOnFinish { get; set; }
+        public string[] itemReward { get; set; }
     }
 }

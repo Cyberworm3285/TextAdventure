@@ -41,6 +41,7 @@ namespace TextAdventure
                 }
                 int next;
                 string input = Console.ReadLine();
+                if (input == "exit") break;
                 int.TryParse(input, out next);
                 if ((next == 0) || (next > currDialogue.nextDialogue.Length))
                 {

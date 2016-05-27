@@ -30,7 +30,7 @@ namespace TextAdventure
         private NPC_Master npcMaster = new NPC_Master();
         private DialogueMaster diaMaster = new DialogueMaster();
         private char commandDivider = '-', argDivider = '>';
-        private string batchPathBase = Path.Combine(Directory.GetParent(Directory.GetCurrentDirectory()).Parent.FullName);
+        private string batchPathBase = Path.Combine(Directory.GetCurrentDirectory());
         private string batchPathFileName = "batchCommands.txt";
 
         public AdventureGUI()
@@ -596,6 +596,18 @@ namespace TextAdventure
                             break;
                         default:
                             Console.WriteLine("invalid param in 'dev batch': " + args[1]);
+                            break;
+                    }
+                    break;
+                case "xml":
+                    switch(args[1])
+                    {
+                        case "load":
+                            YAXLib.YAXSerializer xml = new YAXLib.YAXSerializer(typeof (QuestMaster));
+                            xml.SerializeToFile(questMaster, Path.Combine(batchPathBase, "qMaster.xml"));
+                            break;
+                        default:
+                            Console.WriteLine("invalid param in 'xml load': " + args[1]);
                             break;
                     }
                     break;
