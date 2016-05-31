@@ -1,0 +1,9 @@
+class Java extends Object{
+  public Java(){
+    System.out.println("Hure!");
+  }
+  
+  public static void main(String[] args){
+    new Java();
+  }
+}
