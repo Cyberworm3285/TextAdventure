@@ -36,6 +36,7 @@ namespace TextAdventure
             questMaster.setMasters(locMaster,itemMaster);
             locMaster.setMasters(questMaster,itemMaster);
             itemMaster.setMasters(questMaster,locMaster);
+            Console.WriteLine("Julian stinkt");
 
             try
             {
