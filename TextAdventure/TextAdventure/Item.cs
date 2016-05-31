@@ -85,11 +85,13 @@ namespace TextAdventure
         /// <summary>
         ///     Für Austausch untereinander
         /// </summary>
-        private QuestMaster qMaster;
+        private QuestMaster questMaster;
         /// <summary>
         ///     Für Austausch untereinander
         /// </summary>
         private LocationMaster locMaster;
+        private NPC_Master npcMaster;
+        private DialogueMaster diaMaster;
 
         /// <summary>
         ///     Füllt den <see cref="ItemUsage"/>-<see cref="Array"/>
@@ -99,15 +101,28 @@ namespace TextAdventure
             useItemActions = new ItemUsage[] { item_Open_Door };
         }
 
+        public void setNullReferences()
+        {
+            foreach(Item i in allItems)
+            {
+                if (i.finishOnPickUp.Length == 0) i.finishOnPickUp = null;
+                if (i.startOnPickUp.Length == 0) i.startOnPickUp = null;
+                if (i.usableAt.Length == 0) i.usableAt = null;
+                if (i.usageParam.Length == 0) i.usageParam = null;
+            }
+        }
+
         /// <summary>
         ///     Methode, die die Zwischenbindungen unter den Handlern setzt
         /// </summary>
         /// <param name="loc"><see cref="LocationMaster"/></param>
         /// <param name="i"><see cref="ItemMaster"/></param>
-        public void setMasters(QuestMaster q, LocationMaster loc)
+        public void setMasters(QuestMaster q, LocationMaster l, NPC_Master n, DialogueMaster d)
         {
-            locMaster = loc;
-            qMaster = q;
+            locMaster = l;
+            questMaster = q;
+            npcMaster = n;
+            diaMaster = d;
         }
 
         /// <summary>
@@ -117,7 +132,7 @@ namespace TextAdventure
         /// <param name="useParam">Sonstige Parameter</param>
         private void item_Open_Door(string itemName, string useParam)
         {
-            if (Array.IndexOf(locMaster.currLoc.usableItems,itemName) != -1)
+            if (locMaster.currLoc.usableItems.Contains(itemName))
             {
                 Location loc = Array.Find(locMaster.locations, l => l.name == useParam);
                 loc.open = true;
@@ -182,14 +197,14 @@ namespace TextAdventure
                 {
                     if (newItem.finishOnPickUp != "")
                     {
-                        qMaster.completeQuest(newItem.finishOnPickUp);
+                        questMaster.completeQuest(newItem.finishOnPickUp);
                     }
                 }
                 if (newItem.startOnPickUp != null)
                 {
                     if (newItem.startOnPickUp != "")
                     {
-                        qMaster.startQuest(newItem.startOnPickUp);
+                        questMaster.startQuest(newItem.startOnPickUp);
                     }
                 }
                 if (--newItem.pickupCount == 0)
@@ -231,7 +246,7 @@ namespace TextAdventure
                 {
                     if (newItem.finishOnPickUp != "")
                     {
-                        qMaster.completeQuest(newItem.finishOnPickUp);
+                        questMaster.completeQuest(newItem.finishOnPickUp);
                     }
                 }
                 inventory.Add(newItem);
@@ -253,15 +268,16 @@ namespace TextAdventure
     /// </summary>
     public class Item
     {
-        public string combinabelWith, combinableTo;
-        public string usableAt;
-        public string name;
-        public int usageType;
-        public string usageParam;
-        public string description;
-        public int pickupCount=-1;
-        public string startOnPickUp;
-        public string finishOnPickUp;
-        public bool visible;
-    }
+        public string name { get; set; }
+        public string combinabelWith;
+        public string combinableTo;
+        public string usableAt { get; set; }
+        public int usageType { get; set; }
+        public string usageParam { get; set; }
+        public string description { get; set; }
+        public int pickupCount { get; set; } = -1;
+        public string startOnPickUp { get; set; }
+        public string finishOnPickUp { get; set; }
+        public bool visible { get; set; }
+}
 }

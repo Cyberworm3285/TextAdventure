@@ -18,11 +18,28 @@ namespace TextAdventure
         /// <summary>
         ///     Für Austausch untereinander
         /// </summary>
-        private ItemMaster iMaster;
+        private ItemMaster itemMaster;
+        private NPC_Master npcMaster;
+        private DialogueMaster diaMaster;
 
         public QuestMaster()
         {
             backupQuests = quests;
+        }
+
+        public void setNullRefernces()
+        {
+            foreach (Quest q in quests)
+            {
+                if (q.description.Length == 0) q.description = null;
+                if (q.echoOnFinish.Length == 0) q.echoOnFinish = null;
+                if (q.echoOnStart.Length == 0) q.echoOnStart = null;
+                if (q.closeOnFinish.Length == 0) q.closeOnFinish = null;
+                if (q.closeOnStart.Length == 0) q.closeOnStart = null;
+                if (q.openOnFinish.Length == 0) q.openOnFinish = null;
+                if (q.openOnStart.Length == 0) q.openOnStart = null;
+                if (q.triggerOnFinish.Length == 0) q.triggerOnFinish = null;
+            }
         }
 
         public void resetQuest(string name)
@@ -40,10 +57,12 @@ namespace TextAdventure
         /// </summary>
         /// <param name="loc"><see cref="LocationMaster"/></param>
         /// <param name="i"><see cref="ItemMaster"/></param>
-        public void setMasters(LocationMaster loc, ItemMaster i)
+        public void setMasters(LocationMaster l, ItemMaster i, NPC_Master n, DialogueMaster d)
         {
-            locMaster = loc;
-            iMaster = i;
+            locMaster = l;
+            itemMaster = i;
+            npcMaster = n;
+            diaMaster = d;
         }
 
         /// <summary>
@@ -133,12 +152,12 @@ namespace TextAdventure
                 Console.WriteLine("    item reward:");
                 Item[] newItems = new Item[quest.itemReward.Length];
                 int counter = 0;
-                foreach(string s in quest.itemReward)
+                foreach (string s in quest.itemReward)
                 {
-                    newItems[counter] = Array.Find(iMaster.allItems, i => i.name == s);
+                    newItems[counter] = Array.Find(itemMaster.allItems, i => i.name == s);
                     Console.WriteLine("        " + s);
                 }
-                iMaster.inventory.AddRange(newItems);
+                itemMaster.inventory.AddRange(newItems);
             }
             quest.active = false;
             onFinishQuest(name);
@@ -159,7 +178,7 @@ namespace TextAdventure
         /// <summary>
         ///     <see cref="Array"/> aller <see cref="Quest"/>s
         /// </summary>
-        public Quest[] quests = new Quest[]
+        public Quest[] quests { get; set; } = new Quest[]
         {
             new Quest
             {
@@ -204,17 +223,17 @@ namespace TextAdventure
     /// </summary>
     public class Quest
     {
-        public string name;
-        public bool finished;
-        public bool active;
-        public string description;
-        public string echoOnStart;
-        public string echoOnFinish;
-        public string[] triggerOnFinish;
-        public string[] openOnStart;
-        public string[] closeOnStart;
-        public string[] openOnFinish;
-        public string[] closeOnFinish;
-        public string[] itemReward;
+        public string name { get; set; }
+        public bool finished { get; set; }
+        public bool active { get; set; }
+        public string description { get; set; }
+        public string echoOnStart { get; set; }
+        public string echoOnFinish { get; set; }
+        public string[] triggerOnFinish { get; set; }
+        public string[] openOnStart { get; set; }
+        public string[] closeOnStart { get; set; }
+        public string[] openOnFinish { get; set; }
+        public string[] closeOnFinish { get; set; }
+        public string[] itemReward { get; set; }
     }
 }

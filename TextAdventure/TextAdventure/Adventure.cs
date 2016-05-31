@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
+using System.Xml.Serialization;
 
 namespace TextAdventure
 {
@@ -27,28 +28,34 @@ namespace TextAdventure
         ///     Handler für <see cref="Item"/>
         /// </summary>
         private ItemMaster itemMaster = new ItemMaster();
+        private NPC_Master npcMaster = new NPC_Master();
+        private DialogueMaster diaMaster = new DialogueMaster();
         private char commandDivider = '-', argDivider = '>';
-        private string batchPathBase = Path.Combine(Directory.GetParent(Directory.GetCurrentDirectory()).Parent.FullName);
+        private string batchPathBase = Path.Combine(Directory.GetCurrentDirectory());
         private string batchPathFileName = "batchCommands.txt";
+        private bool inStartUp, forceQuitAfterStartUp = false;
 
         public AdventureGUI()
         {
-            questMaster.setMasters(locMaster,itemMaster);
-            locMaster.setMasters(questMaster,itemMaster);
-            itemMaster.setMasters(questMaster,locMaster);
-            Console.WriteLine("Julian stinkt");
-
+            questMaster.setMasters(locMaster, itemMaster, npcMaster, diaMaster);
+            locMaster.setMasters(questMaster, itemMaster, npcMaster, diaMaster);
+            itemMaster.setMasters(questMaster, locMaster, npcMaster, diaMaster);
+            npcMaster.setMasters(questMaster, locMaster, itemMaster, diaMaster);
+            diaMaster.setMasters(questMaster, locMaster, itemMaster, npcMaster);
             try
             {
                 string[] startup = File.ReadAllLines(Path.Combine(batchPathBase,"startUp.txt"));
                 if (startup.Length != 0)
                 {
+                    inStartUp = true;
                     Console.WriteLine("<startup>");
                     foreach (string s in startup)
                     {
+                        //einmal an, immer an
                         fetchCommands(s);
                     }
                     Console.WriteLine("</startup>");
+                    inStartUp = false;
                 }
             }
             catch(FileNotFoundException ex)
@@ -103,7 +110,6 @@ namespace TextAdventure
                         commands.RemoveAt(commandCounter);
                         //..und die neuen an dessen Stelle eingefügt
                         commands.InsertRange(commandCounter,newCommands);
-                        int k=0;
                         break;
                     }
                     else
@@ -112,7 +118,7 @@ namespace TextAdventure
                         argCounter++;
                     }
                 }
-                if(commands[commandCounter].IndexOf(";") == -1)
+                if(!commands[commandCounter].Contains(";"))
                 {
                     //wenn es im ganzen Befehl keine Trennungen mehr geben kann, wird zum nächsten Befehl vortgefahren
                     commandCounter++;
@@ -126,6 +132,7 @@ namespace TextAdventure
         /// <returns></returns>
         public bool fetchCommands(string fixCommand="")
         {
+            if (!inStartUp && forceQuitAfterStartUp) return false;
             string command = (fixCommand=="")?Console.ReadLine():fixCommand;
             if (fixCommand != "") Console.WriteLine(fixCommand);
             if (command.Length == 0)  return false;
@@ -178,6 +185,9 @@ namespace TextAdventure
                             take(arguments[1]);
                         }
                         break;
+                    case "talkto":
+                        talktTo(arguments[1]);
+                        break;
                     case "help":
                         if (arguments.Length == 2)
                         {
@@ -197,6 +207,7 @@ namespace TextAdventure
                     case "exit":
                         if (arguments[1] == "game")
                         {
+                            forceQuitAfterStartUp = (inStartUp) ? true : false;
                             return false;
                         }
                         break;
@@ -258,14 +269,25 @@ namespace TextAdventure
                         Location loc = Array.Find(locMaster.locations, l => l.name == s);
                         Console.WriteLine("    " + ((loc.discovered)?loc.name:loc.alias));
                     }
-                    if (locMaster.currLoc.obtainableItems == null) return;
-                    Item[] items = Array.FindAll(itemMaster.allItems, i => locMaster.currLoc.obtainableItems.IndexOf(i.name) != -1 && i.visible);
-                    if (items.Length != 0)
+                    if (locMaster.currLoc.obtainableItems != null)
                     {
-                        Console.WriteLine("Gegenstände:");
-                        foreach (Item i in items)
+                        Item[] items = Array.FindAll(itemMaster.allItems, i => locMaster.currLoc.obtainableItems.Contains(i.name) && i.visible);
+                        if (items.Length != 0)
                         {
-                            Console.WriteLine(i.name);
+                            Console.WriteLine("Gegenstände:");
+                            foreach (Item i in items)
+                            {
+                                Console.WriteLine(i.name);
+                            }
+                        }
+                    }
+                    NPC[] npcs = Array.FindAll(npcMaster.npcs, n => n.currLoc == locMaster.currLoc.name);
+                    if (npcs.Length != 0)
+                    {
+                        Console.WriteLine("NPCs:");
+                        foreach(NPC n in npcs)
+                        {
+                            Console.WriteLine("    " + n.name);
                         }
                     }
                     break;
@@ -293,6 +315,12 @@ namespace TextAdventure
         private void take(string param)
         {
             itemMaster.takeItem(param);
+        }
+
+        private void talktTo(string param)
+        {
+            //ACHTUNG! diese Funktion enthät ein eigenes Input-Handling in startDialogue()
+            npcMaster.talkTo(param);
         }
 
         private void help(string param = "")
@@ -404,7 +432,8 @@ namespace TextAdventure
                     }
                     break;
                 case "quest":
-                    Quest quest = Array.Find(questMaster.quests, q => q.name == args[2]);
+                    Quest quest = null;
+                    if (args.Length == 3) quest = Array.Find(questMaster.quests, q => q.name == args[2]);
                     switch (args[1])
                     {
                         case "complete":
@@ -443,17 +472,36 @@ namespace TextAdventure
                                 Console.WriteLine("kein gültiger parameter für 'quest start': " + args[2]);
                             }
                             break;
-                        case "activate":
+                        case "deactivate":
                             if (quest != null)
                             {
-                                quest.active = true;
-                                Console.WriteLine("activated quest: " + args[2]);
+                                quest.active = false;
+                                Console.WriteLine("deactivated quest: '" + args[2] + "'");
                             }
                             else if (args[2] == "all")
                             {
                                 foreach (Quest q in questMaster.quests)
                                 {
-                                    Console.WriteLine((q.active)?q.name+" is already active":"activated "+q.name);
+                                    Console.WriteLine((!q.active) ? "'" + q.name + "' is already deactivated" : "deactivated '" + q.name + "'");
+                                    q.active = false;
+                                }
+                            }
+                            else
+                            {
+                                Console.WriteLine("kein gültiger parameter für 'quest deactivate': " + args[2]);
+                            }
+                            break;
+                        case "activate":
+                            if (quest != null)
+                            {
+                                quest.active = true;
+                                Console.WriteLine("activated quest: '" + args[2] + "'");
+                            }
+                            else if (args[2] == "all")
+                            {
+                                foreach (Quest q in questMaster.quests)
+                                {
+                                    Console.WriteLine((q.active)?"'"+q.name+"' is already active":"activated '" + q.name + "'");
                                     q.active = true;
                                 }
                             }
@@ -555,6 +603,90 @@ namespace TextAdventure
                             break;
                         default:
                             Console.WriteLine("invalid param in 'dev batch': " + args[1]);
+                            break;
+                    }
+                    break;
+                case "xml":
+                    XmlSerializer xmlQuest = new XmlSerializer(typeof(Quest[]));
+                    XmlSerializer xmlLocation = new XmlSerializer(typeof(Location[]));
+                    XmlSerializer xmlItem = new XmlSerializer(typeof(Item[]));
+                    XmlSerializer xmlNPC = new XmlSerializer(typeof(NPC[]));
+                    XmlSerializer xmlDialogue = new XmlSerializer(typeof(Dialogue[]));
+                    switch (args[1])
+                    {
+                        case "reset_null":
+
+                            Directory.CreateDirectory(Path.Combine(batchPathBase, "input", "null"));
+                            Quest[] questDummy = new Quest[] { new Quest { } };
+                            StreamWriter sw = new StreamWriter(Path.Combine(batchPathBase, "input", "null", "quests.xml"));
+                            xmlQuest.Serialize(sw, questDummy);
+                            questDummy = null;
+                            Location[] locationDummy = new Location[] { new Location { } };
+                            sw = new StreamWriter(Path.Combine(batchPathBase, "output", "locations.xml"));
+                            xmlLocation.Serialize(sw, locationDummy);
+                            locationDummy = null;
+                            Item[] itemDummy = new Item[] { new Item { } };
+                            sw = new StreamWriter(Path.Combine(batchPathBase, "input", "null", "items.xml"));
+                            xmlItem.Serialize(sw, itemDummy);
+                            itemDummy = null;
+                            NPC[] npcDummy = new NPC[] { new NPC { } };
+                            sw = new StreamWriter(Path.Combine(batchPathBase, "input", "null", "npcs.xml"));
+                            xmlNPC.Serialize(sw, npcDummy);
+                            npcDummy = null;
+                            Dialogue[] dialogueDummy = new Dialogue[] { new Dialogue { } };
+                            sw = new StreamWriter(Path.Combine(batchPathBase, "input", "null", "dialogues.xml"));
+                            xmlDialogue.Serialize(sw, dialogueDummy);
+                            dialogueDummy = null;
+                            sw.Close();
+                            break;
+                        case "load":
+                            if (args.Length == 3)
+                            try
+                            {
+                                StreamReader sr = new StreamReader(Path.Combine(batchPathBase, "input", args[2], "quests.xml"));
+                                questMaster.quests =  (Quest[])xmlQuest.Deserialize(sr);
+                                sr = new StreamReader(Path.Combine(batchPathBase, "input", args[2], "locations.xml"));
+                                locMaster.locations = (Location[])xmlLocation.Deserialize(sr);
+                                sr = new StreamReader(Path.Combine(batchPathBase, "input", args[2], "items.xml"));
+                                itemMaster.allItems = (Item[])xmlItem.Deserialize(sr);
+                                sr = new StreamReader(Path.Combine(batchPathBase, "input", args[2], "npcs.xml"));
+                                npcMaster.npcs = (NPC[])xmlNPC.Deserialize(sr);
+                                sr = new StreamReader(Path.Combine(batchPathBase, "input", args[2], "dialogues.xml"));
+                                diaMaster.dialogues = (Dialogue[])xmlDialogue.Deserialize(sr);
+                                sr.Close();
+                                /*questMaster.setNullRefernces();
+                                locMaster.setNullRefernces();
+                                itemMaster.setNullReferences();
+                                npcMaster.setNullRefernces();
+                                diaMaster.setNullReferneces();*/
+                            }
+                            catch(DirectoryNotFoundException ex)
+                            {
+                                Console.WriteLine("dir not found: " + args[2]);
+                            }
+                            catch(FileNotFoundException ex)
+                            {
+                                Console.WriteLine("files not found: " + Path.Combine(args[2],".."));
+                            }
+                            break;
+                        case "save":
+                            if (args.Length == 3)
+                            {
+                                Directory.CreateDirectory(Path.Combine(batchPathBase, "input", args[2]));
+                                sw = new StreamWriter(Path.Combine(batchPathBase, "input", args[2], "quests.xml"));
+                                xmlQuest.Serialize(sw, questMaster.quests);
+                                sw = new StreamWriter(Path.Combine(batchPathBase, "input", args[2], "locations.xml"));
+                                xmlLocation.Serialize(sw, locMaster.locations);
+                                sw = new StreamWriter(Path.Combine(batchPathBase, "input", args[2], "items.xml"));
+                                xmlItem.Serialize(sw, itemMaster.allItems);
+                                sw = new StreamWriter(Path.Combine(batchPathBase, "input", args[2], "npcs.xml"));
+                                xmlNPC.Serialize(sw, npcMaster.npcs);
+                                sw = new StreamWriter(Path.Combine(batchPathBase, "input", args[2], "dialogue.xml"));
+                                xmlDialogue.Serialize(sw, diaMaster.dialogues);
+                            }
+                            break;
+                        default:
+                            Console.WriteLine("invalid param in 'xml load': " + args[1]);
                             break;
                     }
                     break;

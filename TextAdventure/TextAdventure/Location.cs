@@ -14,11 +14,15 @@ namespace TextAdventure
         /// <summary>
         ///     Für Austausch untereinander
         /// </summary>
-        private QuestMaster qMaster;
+        private QuestMaster questMaster;
         /// <summary>
         ///     Für Austausch untereinander
         /// </summary>
-        private ItemMaster iMaster;
+        private ItemMaster itemMaster;
+
+        private NPC_Master npcMaster;
+        private DialogueMaster diaMaster;
+
         /// <summary>
         ///     Momentan aktive <see cref="Location"/>
         /// </summary>
@@ -32,15 +36,30 @@ namespace TextAdventure
             currLoc = locations[0];
         }
 
+        public void setNullRefernces()
+        {
+            foreach(Location l in locations)
+            {
+                if (l.alias.Length == 0) l.alias = null;
+                if (l.denialMessage.Length == 0) l.denialMessage = null;
+                if (l.completeOnDisvover.Length == 0) l.completeOnDisvover = null;
+                if (l.obtainableItems.Count == 0) l.obtainableItems = null;
+                if (l.startOnDiscover.Length == 0) l.startOnDiscover = null;
+                if (l.usableItems.Length == 0) l.usableItems = null;
+            }
+        }
+
         /// <summary>
         ///     Methode, die die Zwischenbindungen unter den Handlern setzt
         /// </summary>
         /// <param name="loc"><see cref="LocationMaster"/></param>
         /// <param name="i"><see cref="ItemMaster"/></param>
-        public void setMasters(QuestMaster q, ItemMaster i)
+        public void setMasters(QuestMaster q, ItemMaster i, NPC_Master n, DialogueMaster d)
         {
-            qMaster = q;
-            iMaster = i;
+            questMaster = q;
+            itemMaster = i;
+            npcMaster = n;
+            diaMaster = d;
         }
 
         /// <summary>
@@ -53,8 +72,8 @@ namespace TextAdventure
             {
                 foreach (string s in loc.completeOnDisvover)
                 {
-                    Quest quest = Array.Find(qMaster.quests, q => q.name == s);
-                    qMaster.completeQuest(quest.name);
+                    Quest quest = Array.Find(questMaster.quests, q => q.name == s);
+                    questMaster.completeQuest(quest.name);
                 }
             }
         }
@@ -69,8 +88,8 @@ namespace TextAdventure
             {
                 foreach (string s in loc.startOnDiscover)
                 {
-                    Quest quest = Array.Find(qMaster.quests, q => q.name == s);
-                    qMaster.startQuest(quest.name);
+                    Quest quest = Array.Find(questMaster.quests, q => q.name == s);
+                    questMaster.startQuest(quest.name);
                 }
             }
         }
@@ -118,7 +137,7 @@ namespace TextAdventure
         /// <summary>
         ///     <see cref="Array"/> aller <see cref="Location"/>s
         /// </summary>
-        public Location[] locations = new Location[]
+        public Location[] locations { get; set; } = new Location[]
         {
             new Location
             {
@@ -172,7 +191,7 @@ namespace TextAdventure
                 discovered =true,
                 description ="mit glück vlt ein umweg",
                 connections =new string[] {"ende" },
-                obtainableItems = new List<string> {"schwansen_modell"},
+               // obtainableItems = new List<string> {"schwansen_modell"},
             }
         };
     }
@@ -182,16 +201,16 @@ namespace TextAdventure
     /// </summary>
     public class Location
     {
-        public string name;
-        public string alias;
-        public bool open;
-        public bool discovered;
-        public string description;
-        public string[] connections;
-        public string[] completeOnDisvover;
-        public string[] startOnDiscover;
-        public List<string> obtainableItems;
-        public string[] usableItems;
-        public string denialMessage;
+        public string name { get; set; }
+        public string alias { get; set; }
+        public bool open { get; set; }
+        public bool discovered { get; set; }
+        public string description { get; set; }
+        public string[] connections { get; set; }
+        public string[] completeOnDisvover { get; set; }
+        public string[] startOnDiscover { get; set; }
+        public List<string> obtainableItems { get; set; }
+        public string[] usableItems { get; set; }
+        public string denialMessage { get; set; }
     }
 }

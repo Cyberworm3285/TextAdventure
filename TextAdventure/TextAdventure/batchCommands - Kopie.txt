@@ -1,5 +1,5 @@
 look>around
-goto>gammeltür
+goto>gammeltuer
 look>around
 take;lookat>schluessel
 goto>flackernder_flur
@@ -9,7 +9,7 @@ combine>bausatz_1>bausatz_2
 lookat>bombe
 use>bombe
 look>around
-goto>höhle
+goto>hoehle
 look>around
 take;lookat>schwansen_modell
 goto>ende
