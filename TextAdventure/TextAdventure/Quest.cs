@@ -27,6 +27,21 @@ namespace TextAdventure
             backupQuests = quests;
         }
 
+        public void setNullRefernces()
+        {
+            foreach (Quest q in quests)
+            {
+                if (q.description.Length == 0) q.description = null;
+                if (q.echoOnFinish.Length == 0) q.echoOnFinish = null;
+                if (q.echoOnStart.Length == 0) q.echoOnStart = null;
+                if (q.closeOnFinish.Length == 0) q.closeOnFinish = null;
+                if (q.closeOnStart.Length == 0) q.closeOnStart = null;
+                if (q.openOnFinish.Length == 0) q.openOnFinish = null;
+                if (q.openOnStart.Length == 0) q.openOnStart = null;
+                if (q.triggerOnFinish.Length == 0) q.triggerOnFinish = null;
+            }
+        }
+
         public void resetQuest(string name)
         {
             Quest quest = Array.Find(quests, q => q.name == name);

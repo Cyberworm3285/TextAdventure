@@ -14,6 +14,20 @@ namespace TextAdventure
         private NPC_Master npcMaster;
         public Dialogue currDialogue = null;
 
+        public void setNullReferneces()
+        {
+            foreach(Dialogue d in dialogues)
+            {
+                if (d.denialMessage.Length == 0) d.denialMessage = null;
+                if (d.finishOnDialogue.Length == 0) d.finishOnDialogue = null;
+                if (d.requiredForDialogue.Length == 0) d.requiredForDialogue = null;
+                if (d.startOnDialogue.Length == 0) d.startOnDialogue = null;
+                if (d.getOnDialogue.Length == 0) d.getOnDialogue = null;
+                if (d.looseOnDialogue.Length == 0) d.looseOnDialogue = null;
+                if (d.nextDialogue.Length == 0) d.looseOnDialogue = null;
+            }
+        }
+
         public void setMasters(QuestMaster q, LocationMaster l, ItemMaster i, NPC_Master n)
         {
             questMaster = q;
@@ -49,7 +63,7 @@ namespace TextAdventure
                     continue;
                 }
                 Dialogue oldDialogue = currDialogue;
-                currDialogue = Array.Find(dialogues, d => d.name == currDialogue.nextDialogue[next-1]);
+                currDialogue = Array.Find(dialogues, d => d.name == currDialogue.nextDialogue[next - 1]);
                 if (currDialogue == null) break;
                 if (currDialogue.requiredForDialogue != null)
                 {
@@ -60,6 +74,7 @@ namespace TextAdventure
                     }
                 }
             }
+            Console.WriteLine("closed dialogue with: " + npcMaster.currNPC.name + ((npcMaster.currNPC.alias != null) ? "'" + npcMaster.currNPC.alias + "'" : ""));
         }
 
         private void onNewDialogue()
@@ -82,7 +97,7 @@ namespace TextAdventure
             }
             if (currDialogue.getOnDialogue != null)
             {
-                foreach(string s in currDialogue.getOnDialogue)
+                foreach (string s in currDialogue.getOnDialogue)
                 {
                     Item item = Array.Find(itemMaster.allItems, i => i.name == s);
                     if (item != null)
@@ -113,19 +128,19 @@ namespace TextAdventure
             },
         };
     }
+
     public class Dialogue
     {
-        public string name;
-        public string NPC_part;
-        public string[] answers;
-        public string[] nextDialogue;
-        public string startOnDialogue;
-        public string finishOnDialogue;
-        public string[] looseOnDialogue;
-        public string[] getOnDialogue;
-        public string requiredForDialogue;
-        public bool finished;
-        public string denialMessage;
-
+        public string name { get; set; }
+        public string NPC_part { get; set; }
+        public string startOnDialogue { get; set; }
+        public string finishOnDialogue { get; set; }
+        public string requiredForDialogue { get; set; }
+        public bool finished { get; set; }
+        public string denialMessage { get; set; }
+        public string[] answers { get; set; }
+        public string[] nextDialogue { get; set; }
+        public string[] looseOnDialogue { get; set; }
+        public string[] getOnDialogue { get; set; }
     }
 }

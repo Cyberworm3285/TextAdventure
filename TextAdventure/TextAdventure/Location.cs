@@ -36,6 +36,19 @@ namespace TextAdventure
             currLoc = locations[0];
         }
 
+        public void setNullRefernces()
+        {
+            foreach(Location l in locations)
+            {
+                if (l.alias.Length == 0) l.alias = null;
+                if (l.denialMessage.Length == 0) l.denialMessage = null;
+                if (l.completeOnDisvover.Length == 0) l.completeOnDisvover = null;
+                if (l.obtainableItems.Count == 0) l.obtainableItems = null;
+                if (l.startOnDiscover.Length == 0) l.startOnDiscover = null;
+                if (l.usableItems.Length == 0) l.usableItems = null;
+            }
+        }
+
         /// <summary>
         ///     Methode, die die Zwischenbindungen unter den Handlern setzt
         /// </summary>
@@ -124,7 +137,7 @@ namespace TextAdventure
         /// <summary>
         ///     <see cref="Array"/> aller <see cref="Location"/>s
         /// </summary>
-        public Location[] locations = new Location[]
+        public Location[] locations { get; set; } = new Location[]
         {
             new Location
             {
@@ -188,16 +201,16 @@ namespace TextAdventure
     /// </summary>
     public class Location
     {
-        public string name;
-        public string alias;
-        public bool open;
-        public bool discovered;
-        public string description;
-        public string[] connections;
-        public string[] completeOnDisvover;
-        public string[] startOnDiscover;
-        public List<string> obtainableItems;
-        public string[] usableItems;
-        public string denialMessage;
+        public string name { get; set; }
+        public string alias { get; set; }
+        public bool open { get; set; }
+        public bool discovered { get; set; }
+        public string description { get; set; }
+        public string[] connections { get; set; }
+        public string[] completeOnDisvover { get; set; }
+        public string[] startOnDiscover { get; set; }
+        public List<string> obtainableItems { get; set; }
+        public string[] usableItems { get; set; }
+        public string denialMessage { get; set; }
     }
 }

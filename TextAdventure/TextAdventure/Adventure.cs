@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
+using System.Xml.Serialization;
 
 namespace TextAdventure
 {
@@ -32,6 +33,7 @@ namespace TextAdventure
         private char commandDivider = '-', argDivider = '>';
         private string batchPathBase = Path.Combine(Directory.GetCurrentDirectory());
         private string batchPathFileName = "batchCommands.txt";
+        private bool inStartUp, forceQuitAfterStartUp = false;
 
         public AdventureGUI()
         {
@@ -45,12 +47,15 @@ namespace TextAdventure
                 string[] startup = File.ReadAllLines(Path.Combine(batchPathBase,"startUp.txt"));
                 if (startup.Length != 0)
                 {
+                    inStartUp = true;
                     Console.WriteLine("<startup>");
                     foreach (string s in startup)
                     {
+                        //einmal an, immer an
                         fetchCommands(s);
                     }
                     Console.WriteLine("</startup>");
+                    inStartUp = false;
                 }
             }
             catch(FileNotFoundException ex)
@@ -127,6 +132,7 @@ namespace TextAdventure
         /// <returns></returns>
         public bool fetchCommands(string fixCommand="")
         {
+            if (!inStartUp && forceQuitAfterStartUp) return false;
             string command = (fixCommand=="")?Console.ReadLine():fixCommand;
             if (fixCommand != "") Console.WriteLine(fixCommand);
             if (command.Length == 0)  return false;
@@ -201,6 +207,7 @@ namespace TextAdventure
                     case "exit":
                         if (arguments[1] == "game")
                         {
+                            forceQuitAfterStartUp = (inStartUp) ? true : false;
                             return false;
                         }
                         break;
@@ -600,11 +607,83 @@ namespace TextAdventure
                     }
                     break;
                 case "xml":
-                    switch(args[1])
+                    XmlSerializer xmlQuest = new XmlSerializer(typeof(Quest[]));
+                    XmlSerializer xmlLocation = new XmlSerializer(typeof(Location[]));
+                    XmlSerializer xmlItem = new XmlSerializer(typeof(Item[]));
+                    XmlSerializer xmlNPC = new XmlSerializer(typeof(NPC[]));
+                    XmlSerializer xmlDialogue = new XmlSerializer(typeof(Dialogue[]));
+                    switch (args[1])
                     {
+                        case "reset_null":
+
+                            Directory.CreateDirectory(Path.Combine(batchPathBase, "input", "null"));
+                            Quest[] questDummy = new Quest[] { new Quest { } };
+                            StreamWriter sw = new StreamWriter(Path.Combine(batchPathBase, "input", "null", "quests.xml"));
+                            xmlQuest.Serialize(sw, questDummy);
+                            questDummy = null;
+                            Location[] locationDummy = new Location[] { new Location { } };
+                            sw = new StreamWriter(Path.Combine(batchPathBase, "output", "locations.xml"));
+                            xmlLocation.Serialize(sw, locationDummy);
+                            locationDummy = null;
+                            Item[] itemDummy = new Item[] { new Item { } };
+                            sw = new StreamWriter(Path.Combine(batchPathBase, "input", "null", "items.xml"));
+                            xmlItem.Serialize(sw, itemDummy);
+                            itemDummy = null;
+                            NPC[] npcDummy = new NPC[] { new NPC { } };
+                            sw = new StreamWriter(Path.Combine(batchPathBase, "input", "null", "npcs.xml"));
+                            xmlNPC.Serialize(sw, npcDummy);
+                            npcDummy = null;
+                            Dialogue[] dialogueDummy = new Dialogue[] { new Dialogue { } };
+                            sw = new StreamWriter(Path.Combine(batchPathBase, "input", "null", "dialogues.xml"));
+                            xmlDialogue.Serialize(sw, dialogueDummy);
+                            dialogueDummy = null;
+                            sw.Close();
+                            break;
                         case "load":
-                            YAXLib.YAXSerializer xml = new YAXLib.YAXSerializer(typeof (QuestMaster));
-                            xml.SerializeToFile(questMaster, Path.Combine(batchPathBase, "qMaster.xml"));
+                            if (args.Length == 3)
+                            try
+                            {
+                                StreamReader sr = new StreamReader(Path.Combine(batchPathBase, "input", args[2], "quests.xml"));
+                                questMaster.quests =  (Quest[])xmlQuest.Deserialize(sr);
+                                sr = new StreamReader(Path.Combine(batchPathBase, "input", args[2], "locations.xml"));
+                                locMaster.locations = (Location[])xmlLocation.Deserialize(sr);
+                                sr = new StreamReader(Path.Combine(batchPathBase, "input", args[2], "items.xml"));
+                                itemMaster.allItems = (Item[])xmlItem.Deserialize(sr);
+                                sr = new StreamReader(Path.Combine(batchPathBase, "input", args[2], "npcs.xml"));
+                                npcMaster.npcs = (NPC[])xmlNPC.Deserialize(sr);
+                                sr = new StreamReader(Path.Combine(batchPathBase, "input", args[2], "dialogues.xml"));
+                                diaMaster.dialogues = (Dialogue[])xmlDialogue.Deserialize(sr);
+                                sr.Close();
+                                /*questMaster.setNullRefernces();
+                                locMaster.setNullRefernces();
+                                itemMaster.setNullReferences();
+                                npcMaster.setNullRefernces();
+                                diaMaster.setNullReferneces();*/
+                            }
+                            catch(DirectoryNotFoundException ex)
+                            {
+                                Console.WriteLine("dir not found: " + args[2]);
+                            }
+                            catch(FileNotFoundException ex)
+                            {
+                                Console.WriteLine("files not found: " + Path.Combine(args[2],".."));
+                            }
+                            break;
+                        case "save":
+                            if (args.Length == 3)
+                            {
+                                Directory.CreateDirectory(Path.Combine(batchPathBase, "input", args[2]));
+                                sw = new StreamWriter(Path.Combine(batchPathBase, "input", args[2], "quests.xml"));
+                                xmlQuest.Serialize(sw, questMaster.quests);
+                                sw = new StreamWriter(Path.Combine(batchPathBase, "input", args[2], "locations.xml"));
+                                xmlLocation.Serialize(sw, locMaster.locations);
+                                sw = new StreamWriter(Path.Combine(batchPathBase, "input", args[2], "items.xml"));
+                                xmlItem.Serialize(sw, itemMaster.allItems);
+                                sw = new StreamWriter(Path.Combine(batchPathBase, "input", args[2], "npcs.xml"));
+                                xmlNPC.Serialize(sw, npcMaster.npcs);
+                                sw = new StreamWriter(Path.Combine(batchPathBase, "input", args[2], "dialogue.xml"));
+                                xmlDialogue.Serialize(sw, diaMaster.dialogues);
+                            }
                             break;
                         default:
                             Console.WriteLine("invalid param in 'xml load': " + args[1]);

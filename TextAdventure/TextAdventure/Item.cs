@@ -101,6 +101,17 @@ namespace TextAdventure
             useItemActions = new ItemUsage[] { item_Open_Door };
         }
 
+        public void setNullReferences()
+        {
+            foreach(Item i in allItems)
+            {
+                if (i.finishOnPickUp.Length == 0) i.finishOnPickUp = null;
+                if (i.startOnPickUp.Length == 0) i.startOnPickUp = null;
+                if (i.usableAt.Length == 0) i.usableAt = null;
+                if (i.usageParam.Length == 0) i.usageParam = null;
+            }
+        }
+
         /// <summary>
         ///     Methode, die die Zwischenbindungen unter den Handlern setzt
         /// </summary>
@@ -257,15 +268,16 @@ namespace TextAdventure
     /// </summary>
     public class Item
     {
-        public string combinabelWith, combinableTo;
-        public string usableAt;
-        public string name;
-        public int usageType;
-        public string usageParam;
-        public string description;
-        public int pickupCount=-1;
-        public string startOnPickUp;
-        public string finishOnPickUp;
-        public bool visible;
-    }
+        public string name { get; set; }
+        public string combinabelWith;
+        public string combinableTo;
+        public string usableAt { get; set; }
+        public int usageType { get; set; }
+        public string usageParam { get; set; }
+        public string description { get; set; }
+        public int pickupCount { get; set; } = -1;
+        public string startOnPickUp { get; set; }
+        public string finishOnPickUp { get; set; }
+        public bool visible { get; set; }
+}
 }

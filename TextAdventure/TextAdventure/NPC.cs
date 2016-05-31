@@ -14,6 +14,16 @@ namespace TextAdventure
         private DialogueMaster diaMaster;
         public NPC currNPC = null;
 
+        public void setNullRefernces()
+        {
+            foreach(NPC n in npcs)
+            {
+                if (n.alias.Length == 0) n.alias = null;
+                if (n.finishOnDialogue.Length == 0) n.finishOnDialogue = null;
+                if (n.startOnDialogue.Length == 0) n.startOnDialogue = null;
+            }
+        }
+
         public void setMasters(QuestMaster q, LocationMaster l, ItemMaster i, DialogueMaster d)
         {
             questMaster = q;
@@ -76,12 +86,12 @@ namespace TextAdventure
     }
     public class NPC
     {
-        public string name;
-        public string alias;
-        public string currLoc;
-        public string initialDialogue;
-        public string currDialogue;
-        public string startOnDialogue;
-        public string finishOnDialogue;
+        public string name { get; set; }
+        public string alias { get; set; }
+        public string currLoc { get; set; }
+        public string initialDialogue { get; set; }
+        public string currDialogue { get; set; }
+        public string startOnDialogue { get; set; }
+        public string finishOnDialogue { get; set; }
     }
 }
