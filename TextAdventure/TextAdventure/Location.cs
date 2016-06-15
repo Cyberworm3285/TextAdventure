@@ -43,7 +43,6 @@ namespace TextAdventure
             foreach(Location l in locations)
             {
                 if (l.alias.Length == 0) l.alias = null;
-                if (l.denialMessage.Length == 0) l.denialMessage = null;
                 if (l.obtainableItems.Count == 0) l.obtainableItems = null;
                 if (l.usableItems.Length == 0) l.usableItems = null;
             }
@@ -94,15 +93,24 @@ namespace TextAdventure
                 Console.WriteLine("Location not avaiable: " + name);
                 return;
             }
-            if (!loc.open)
+            int conIndex = Array.IndexOf(currLoc.connections, name);
+            if ((!currLoc.connectionStatus[conIndex]) && (!devmode))
             {
-                Console.WriteLine(loc.denialMessage);
+                string message;
+                loc.denialMessage.TryGetValue(currLoc.name, out message);
+                Console.WriteLine(message);
                 return;
             }
             if (loc.discovered == false) { discover(loc); }
             onLeave(loc);
             currLoc = loc;
             Console.WriteLine("your current location: " + currLoc.name);
+        }
+
+        public void changeConnectionStatus(Location loc, string name, bool status)
+        {
+            int index = Array.IndexOf(loc.connections, name);
+            loc.connectionStatus[index] = status;
         }
 
         /// <summary>
@@ -128,7 +136,8 @@ namespace TextAdventure
                 open =true,
                 discovered = true,
                 description ="hier beginnt unser geniales nices abenteuer durch die wundersame welt der höööhle" ,
-                connections = new string[] { "mitte" }
+                connections = new string[] { "mitte" },
+                connectionStatus = new bool[] { true }
             },
             new Location {
                 name = "mitte",
@@ -137,12 +146,13 @@ namespace TextAdventure
                 discovered =false,
                 description ="hier is die midde, am boden liegt unter dreck ein schluessel",
                 connections = new string[] { "start", "ende", "labor" },
-                onDiscvover = 
+                connectionStatus = new bool[] { true, false, true },
+                onDiscvover =
                 "dev>quest>complete>Die ersten Schritte-"+
                 "dev>quest>start>Erreiche das Ende",
                 obtainableItems = new List<string> { "schluessel" },
                 usableItems = new string[] {"schluessel","bombe"},
-                denialMessage = "is kaputt, yo!"
+                denialMessage = new Dictionary<string, string>(){ { "start","test, yo!" },{"labor","is kaputt, yo!"} },
             },
             new Location
             {
@@ -154,7 +164,8 @@ namespace TextAdventure
                 onDiscvover = 
                 "dev>quest>start>Erreiche das Ende",
                 connections =new string[] { "mitte" },
-                denialMessage = "du benötigst einen schlüssel um dieses tor zu öffnen"
+                connectionStatus = new bool[] { true },
+                denialMessage = new Dictionary<string, string>() { {"mitte", "du benötigst einen schlüssel um dieses tor zu öffnen" } }
             },
             new Location
             {
@@ -164,6 +175,7 @@ namespace TextAdventure
                 discovered =false,
                 description ="Krasse sachen sind hier",
                 connections =new string[] { "mitte","hoehle" },
+                connectionStatus = new bool[] { true,true },
                 onDiscvover = 
                 "dev>quest>start>bastle was, das wummst!",
                 obtainableItems = new List<string> { "bausatz_1", "bausatz_2" },
@@ -176,7 +188,8 @@ namespace TextAdventure
                 open =false,
                 discovered =true,
                 description ="mit glück vlt ein umweg",
-                connections =new string[] {"ende" },
+                connections =new string[] { "ende" },
+                connectionStatus = new bool[] { true },
                // obtainableItems = new List<string> {"schwansen_modell"},
             }
         };
@@ -198,6 +211,6 @@ namespace TextAdventure
         public string onLeave { get; set; }
         public List<string> obtainableItems { get; set; }
         public string[] usableItems { get; set; }
-        public string denialMessage { get; set; }
+        public Dictionary<string,string> denialMessage { get; set; }
     }
 }

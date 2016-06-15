@@ -354,7 +354,7 @@ namespace TextAdventure
                     break;
                 case "location":
                     Location loc = null;
-                    if(args.Length == 3) loc = Array.Find(locMaster.locations, l => l.name == args[2]);
+                    if(args.Length >= 3) loc = Array.Find(locMaster.locations, l => l.name == args[2]);
                     switch (args[1])
                     {
                         case "open":
@@ -364,11 +364,11 @@ namespace TextAdventure
                                 loc.open = true;
                             }
                             break;
-                        case "close":
-                            Console.WriteLine(((loc == null) ? "kein gültiger parameter für 'location close': " : "location closed: ") + args[2]);
-                            if (loc != null)
+                        case "close_connection":
+                            Console.WriteLine(((loc == null) ? "kein gültiger parameter für 'close_connections': " : "location closed: ") + args[2]);
+                            if ((loc != null) && (args.Length == 4))
                             {
-                                loc.open = false;
+                                locMaster.changeConnectionStatus(loc, args[3], false);
                             }
                             break;
                         case "port":
