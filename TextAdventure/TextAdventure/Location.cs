@@ -38,16 +38,6 @@ namespace TextAdventure
             currLoc = locations[0];
         }
 
-        public void setNullRefernces()
-        {
-            foreach(Location l in locations)
-            {
-                if (l.alias.Length == 0) l.alias = null;
-                if (l.obtainableItems.Count == 0) l.obtainableItems = null;
-                if (l.usableItems.Length == 0) l.usableItems = null;
-            }
-        }
-
         /// <summary>
         ///     Methode, die die Zwischenbindungen unter den Handlern setzt
         /// </summary>
@@ -94,6 +84,11 @@ namespace TextAdventure
                 return;
             }
             int conIndex = Array.IndexOf(currLoc.connections, name);
+            if (conIndex == -1)
+            {
+                Location alias = Array.Find(locations, l => l.alias == name);
+                conIndex = Array.IndexOf(currLoc.connections, alias.name);
+            }
             if ((!currLoc.connectionStatus[conIndex]) && (!devmode))
             {
                 string message;

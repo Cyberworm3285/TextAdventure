@@ -47,16 +47,6 @@ namespace TextAdventure
             useItemActions = new ItemUsage[] { item_Open_Door };
         }
 
-        public void setNullReferences()
-        {
-            foreach(Item i in allItems)
-            {
-                if (i.onPickUp.Length == 0) i.onPickUp = null;
-                if (i.usableAt.Length == 0) i.usableAt = null;
-                if (i.usageParam.Length == 0) i.usageParam = null;
-            }
-        }
-
         /// <summary>
         ///     Methode, die die Zwischenbindungen unter den Handlern setzt
         /// </summary>
@@ -254,8 +244,8 @@ namespace TextAdventure
     public class Item
     {
         public string name { get; set; }
-        public string combinabelWith;
-        public string combinableTo;
+        public string combinabelWith { get; set; }
+        public string combinableTo { get; set; }
         public string usableAt { get; set; }
         public int usageType { get; set; }
         public string usageParam { get; set; }

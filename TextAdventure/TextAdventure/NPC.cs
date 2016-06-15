@@ -20,15 +20,6 @@ namespace TextAdventure
             main = owner;
         }
 
-        public void setNullRefernces()
-        {
-            foreach(NPC n in npcs)
-            {
-                if (n.alias.Length == 0) n.alias = null;
-                if (n.onDialogue.Length == 0) n.onDialogue = null;
-            }
-        }
-
         public void setMasters(QuestMaster q, LocationMaster l, ItemMaster i, DialogueMaster d)
         {
             questMaster = q;

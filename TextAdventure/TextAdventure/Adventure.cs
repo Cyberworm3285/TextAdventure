@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 using System.Xml.Serialization;
+using Newtonsoft;
 
 namespace TextAdventure
 {
@@ -608,59 +609,31 @@ namespace TextAdventure
                             break;
                     }
                     break;
-                case "xml":
-                    XmlSerializer xmlQuest = new XmlSerializer(typeof(Quest[]));
-                    XmlSerializer xmlLocation = new XmlSerializer(typeof(Location[]));
-                    XmlSerializer xmlItem = new XmlSerializer(typeof(Item[]));
-                    XmlSerializer xmlNPC = new XmlSerializer(typeof(NPC[]));
-                    XmlSerializer xmlDialogue = new XmlSerializer(typeof(Dialogue[]));
+                case "json":
                     switch (args[1])
                     {
                         case "reset_null":
-
                             Directory.CreateDirectory(Path.Combine(batchPathBase, "input", "null"));
                             Quest[] questDummy = new Quest[] { new Quest { } };
-                            StreamWriter sw = new StreamWriter(Path.Combine(batchPathBase, "input", "null", "quests.xml"));
-                            xmlQuest.Serialize(sw, questDummy);
-                            questDummy = null;
-                            Location[] locationDummy = new Location[] { new Location { } };
-                            sw = new StreamWriter(Path.Combine(batchPathBase, "output", "locations.xml"));
-                            xmlLocation.Serialize(sw, locationDummy);
-                            locationDummy = null;
+                            Location[] locDummy = new Location[] { new Location { } };
                             Item[] itemDummy = new Item[] { new Item { } };
-                            sw = new StreamWriter(Path.Combine(batchPathBase, "input", "null", "items.xml"));
-                            xmlItem.Serialize(sw, itemDummy);
-                            itemDummy = null;
                             NPC[] npcDummy = new NPC[] { new NPC { } };
-                            sw = new StreamWriter(Path.Combine(batchPathBase, "input", "null", "npcs.xml"));
-                            xmlNPC.Serialize(sw, npcDummy);
-                            npcDummy = null;
-                            Dialogue[] dialogueDummy = new Dialogue[] { new Dialogue { } };
-                            sw = new StreamWriter(Path.Combine(batchPathBase, "input", "null", "dialogues.xml"));
-                            xmlDialogue.Serialize(sw, dialogueDummy);
-                            dialogueDummy = null;
-                            sw.Close();
+                            Dialogue[] diaDummy = new Dialogue[] { new Dialogue { } };
+                            File.WriteAllText(Path.Combine(batchPathBase,"input","null","quests.json"), Newtonsoft.Json.JsonConvert.SerializeObject(questDummy, Newtonsoft.Json.Formatting.Indented));
+                            File.WriteAllText(Path.Combine(batchPathBase, "input", "null", "locations.json"), Newtonsoft.Json.JsonConvert.SerializeObject(locDummy, Newtonsoft.Json.Formatting.Indented));
+                            File.WriteAllText(Path.Combine(batchPathBase, "input", "null", "items.json"), Newtonsoft.Json.JsonConvert.SerializeObject(itemDummy, Newtonsoft.Json.Formatting.Indented));
+                            File.WriteAllText(Path.Combine(batchPathBase, "input", "null", "npcs.json"), Newtonsoft.Json.JsonConvert.SerializeObject(npcDummy, Newtonsoft.Json.Formatting.Indented));
+                            File.WriteAllText(Path.Combine(batchPathBase, "input", "null", "dialogues.json"), Newtonsoft.Json.JsonConvert.SerializeObject(diaDummy, Newtonsoft.Json.Formatting.Indented));
                             break;
                         case "load":
                             if (args.Length == 3)
                             try
                             {
-                                StreamReader sr = new StreamReader(Path.Combine(batchPathBase, "input", args[2], "quests.xml"));
-                                questMaster.quests =  (Quest[])xmlQuest.Deserialize(sr);
-                                sr = new StreamReader(Path.Combine(batchPathBase, "input", args[2], "locations.xml"));
-                                locMaster.locations = (Location[])xmlLocation.Deserialize(sr);
-                                sr = new StreamReader(Path.Combine(batchPathBase, "input", args[2], "items.xml"));
-                                itemMaster.allItems = (Item[])xmlItem.Deserialize(sr);
-                                sr = new StreamReader(Path.Combine(batchPathBase, "input", args[2], "npcs.xml"));
-                                npcMaster.npcs = (NPC[])xmlNPC.Deserialize(sr);
-                                sr = new StreamReader(Path.Combine(batchPathBase, "input", args[2], "dialogues.xml"));
-                                diaMaster.dialogues = (Dialogue[])xmlDialogue.Deserialize(sr);
-                                sr.Close();
-                                /*questMaster.setNullRefernces();
-                                locMaster.setNullRefernces();
-                                itemMaster.setNullReferences();
-                                npcMaster.setNullRefernces();
-                                diaMaster.setNullReferneces();*/
+                                questMaster.quests = Newtonsoft.Json.JsonConvert.DeserializeObject<Quest[]>(File.ReadAllText(Path.Combine(batchPathBase, "input", args[2], "quests.json")));
+                                locMaster.locations = Newtonsoft.Json.JsonConvert.DeserializeObject<Location[]>(File.ReadAllText(Path.Combine(batchPathBase, "input", args[2], "locations.json")));
+                                itemMaster.allItems = Newtonsoft.Json.JsonConvert.DeserializeObject<Item[]>(File.ReadAllText(Path.Combine(batchPathBase, "input", args[2], "items.json")));
+                                npcMaster.npcs = Newtonsoft.Json.JsonConvert.DeserializeObject<NPC[]>(File.ReadAllText(Path.Combine(batchPathBase,  "input", args[2], "npcs.json")));
+                                diaMaster.dialogues = Newtonsoft.Json.JsonConvert.DeserializeObject<Dialogue[]>(File.ReadAllText(Path.Combine(batchPathBase, "input", args[2], "dialogues.json")));
                             }
                             catch(DirectoryNotFoundException ex)
                             {
@@ -675,16 +648,11 @@ namespace TextAdventure
                             if (args.Length == 3)
                             {
                                 Directory.CreateDirectory(Path.Combine(batchPathBase, "input", args[2]));
-                                sw = new StreamWriter(Path.Combine(batchPathBase, "input", args[2], "quests.xml"));
-                                xmlQuest.Serialize(sw, questMaster.quests);
-                                sw = new StreamWriter(Path.Combine(batchPathBase, "input", args[2], "locations.xml"));
-                                xmlLocation.Serialize(sw, locMaster.locations);
-                                sw = new StreamWriter(Path.Combine(batchPathBase, "input", args[2], "items.xml"));
-                                xmlItem.Serialize(sw, itemMaster.allItems);
-                                sw = new StreamWriter(Path.Combine(batchPathBase, "input", args[2], "npcs.xml"));
-                                xmlNPC.Serialize(sw, npcMaster.npcs);
-                                sw = new StreamWriter(Path.Combine(batchPathBase, "input", args[2], "dialogue.xml"));
-                                xmlDialogue.Serialize(sw, diaMaster.dialogues);
+                                File.WriteAllText(Path.Combine(batchPathBase, "input", args[2], "quests.json"), Newtonsoft.Json.JsonConvert.SerializeObject(questMaster.quests, Newtonsoft.Json.Formatting.Indented));
+                                File.WriteAllText(Path.Combine(batchPathBase, "input", args[2], "locations.json"), Newtonsoft.Json.JsonConvert.SerializeObject(locMaster.locations, Newtonsoft.Json.Formatting.Indented));
+                                File.WriteAllText(Path.Combine(batchPathBase, "input", args[2], "items.json"), Newtonsoft.Json.JsonConvert.SerializeObject(itemMaster.allItems, Newtonsoft.Json.Formatting.Indented));
+                                File.WriteAllText(Path.Combine(batchPathBase, "input", args[2], "npcs.json"), Newtonsoft.Json.JsonConvert.SerializeObject(npcMaster.npcs, Newtonsoft.Json.Formatting.Indented));
+                                File.WriteAllText(Path.Combine(batchPathBase, "input", args[2], "dialogues.json"), Newtonsoft.Json.JsonConvert.SerializeObject(diaMaster.dialogues, Newtonsoft.Json.Formatting.Indented));
                             }
                             break;
                         default:

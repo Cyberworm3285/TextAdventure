@@ -158,7 +158,7 @@ namespace TextAdventure
         public bool finished { get; set; }
         public bool active { get; set; }
         public string description { get; set; }
-        public string onFinish;
-        public string onStart;
+        public string onFinish { get; set; }
+        public string onStart { get; set; }
     }
 }

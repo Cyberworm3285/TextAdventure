@@ -21,17 +21,6 @@ namespace TextAdventure
             main = owner;
         }
 
-        public void setNullReferneces()
-        {
-            foreach(Dialogue d in dialogues)
-            {
-                if (d.denialMessage.Length == 0) d.denialMessage = null;
-                if (d.onDialogue.Length == 0) d.onDialogue = null;
-                if (d.requiredForDialogue.Length == 0) d.requiredForDialogue = null;
-                if (d.nextDialogue.Length == 0) d.nextDialogue = null;
-            }
-        }
-
         public void setMasters(QuestMaster q, LocationMaster l, ItemMaster i, NPC_Master n)
         {
             questMaster = q;
