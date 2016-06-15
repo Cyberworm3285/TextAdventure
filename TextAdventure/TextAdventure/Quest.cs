@@ -21,25 +21,12 @@ namespace TextAdventure
         private ItemMaster itemMaster;
         private NPC_Master npcMaster;
         private DialogueMaster diaMaster;
+        private AdventureGUI main;
 
-        public QuestMaster()
+        public QuestMaster(AdventureGUI owner)
         {
             backupQuests = quests;
-        }
-
-        public void setNullRefernces()
-        {
-            foreach (Quest q in quests)
-            {
-                if (q.description.Length == 0) q.description = null;
-                if (q.echoOnFinish.Length == 0) q.echoOnFinish = null;
-                if (q.echoOnStart.Length == 0) q.echoOnStart = null;
-                if (q.closeOnFinish.Length == 0) q.closeOnFinish = null;
-                if (q.closeOnStart.Length == 0) q.closeOnStart = null;
-                if (q.openOnFinish.Length == 0) q.openOnFinish = null;
-                if (q.openOnStart.Length == 0) q.openOnStart = null;
-                if (q.triggerOnFinish.Length == 0) q.triggerOnFinish = null;
-            }
+            main = owner;
         }
 
         public void resetQuest(string name)
@@ -72,26 +59,7 @@ namespace TextAdventure
         public void onStartQuest(string name)
         {
             Quest quest = Array.Find(quests, q => q.name == name);
-            if (quest.closeOnStart != null)
-            {
-                foreach (string s in quest.closeOnStart)
-                {
-                    Location loc = Array.Find(locMaster.locations, l => l.name == s);
-                    loc.open = false;
-                }
-            }
-            if (quest.openOnStart != null)
-            {
-                foreach (string s in quest.openOnStart)
-                {
-                    Location loc = Array.Find(locMaster.locations, l => l.name == s);
-                    loc.open = true;
-                }
-            }
-            if (quest.echoOnStart != null)
-            {
-                Console.WriteLine(quest.echoOnStart);
-            }
+            main.fetchCommands(quest.onStart, false, false);
         }
 
         /// <summary>
@@ -101,33 +69,7 @@ namespace TextAdventure
         public void onFinishQuest(string name)
         {
             Quest quest = Array.Find(quests, q => q.name == name);
-            if (quest.closeOnFinish != null)
-            {
-                foreach (string s in quest.closeOnFinish)
-                {
-                    Location loc = Array.Find(locMaster.locations, l => l.name == s);
-                    loc.open = false;
-                }
-            }
-            if (quest.openOnFinish != null)
-            {
-                foreach (string s in quest.openOnFinish)
-                {
-                    Location loc = Array.Find(locMaster.locations, l => l.name == s);
-                    loc.open = true;
-                }
-            }
-            if (quest.triggerOnFinish != null)
-            {
-                foreach (string s in quest.triggerOnFinish)
-                {
-                    startQuest(s);
-                }
-            }
-            if (quest.echoOnFinish != null)
-            {
-                Console.WriteLine(quest.echoOnFinish);
-            }
+            main.fetchCommands(quest.onFinish, false, false);
         }
 
         /// <summary>
@@ -143,22 +85,6 @@ namespace TextAdventure
             }
             quest.finished = true;
             Console.WriteLine("finished quest: " + name);
-            if (quest.itemReward == null)
-            {
-                Console.WriteLine("    item reward: none");
-            }
-            else
-            {
-                Console.WriteLine("    item reward:");
-                Item[] newItems = new Item[quest.itemReward.Length];
-                int counter = 0;
-                foreach (string s in quest.itemReward)
-                {
-                    newItems[counter] = Array.Find(itemMaster.allItems, i => i.name == s);
-                    Console.WriteLine("        " + s);
-                }
-                itemMaster.inventory.AddRange(newItems);
-            }
             quest.active = false;
             onFinishQuest(name);
         }
@@ -185,7 +111,9 @@ namespace TextAdventure
                 name ="Die ersten Schritte",
                 finished =false,
                 active = true,
-                description = "gehe zur mitte um weiterzukommen"
+                description = "gehe zur mitte um weiterzukommen",
+                onFinish = 
+                "dev>item>give>schluessel"
             },
             new Quest
             {
@@ -193,18 +121,21 @@ namespace TextAdventure
                 finished =false,
                 active = false,
                 description = "finde deinen Weg zum Ende",
-                itemReward = new string[] { "'du hast das spiel durchgespielt' trophäe" },
-                echoOnFinish = "glühstrumpf, das testspiel ist durch!",
-                triggerOnFinish=new string[] { "to be continued ..?" }
+                onFinish = 
+                "dev>item>give>'du hast das spiel durchgespielt' trophäe-"+
+                "dev>echo>glühstrumpf, das testspiel ist durch!-"+
+                "dev>quest>start>to be continued?"
             },
             new Quest
             {
                 name ="bastle was, das wummst!",
-                echoOnStart ="die tür ist eingestürzt, such einen anderen weg ans Ziel" ,
-                finished =false, active=false,description="finde und bastle!",
-                itemReward =new string[] { "bombe" },
-                closeOnStart =new string[] { "mitte","start"} ,
-                openOnFinish =new string[] { "ende"}
+                onStart = 
+                "dev>echo>die tür ist eingestürzt, such einen anderen weg ans Ziel-"+
+                "dev>location>close>mitte;start",
+                onFinish = 
+                "dev>item>give>bombe",
+                finished =false, active=false,
+                description ="finde und bastle!",
             },
             new Quest
             {
@@ -213,7 +144,7 @@ namespace TextAdventure
             new Quest
             {
                 name="david in den arsch treten"
-            },
+            }
         };
         private Quest[] backupQuests;
     }
@@ -227,13 +158,7 @@ namespace TextAdventure
         public bool finished { get; set; }
         public bool active { get; set; }
         public string description { get; set; }
-        public string echoOnStart { get; set; }
-        public string echoOnFinish { get; set; }
-        public string[] triggerOnFinish { get; set; }
-        public string[] openOnStart { get; set; }
-        public string[] closeOnStart { get; set; }
-        public string[] openOnFinish { get; set; }
-        public string[] closeOnFinish { get; set; }
-        public string[] itemReward { get; set; }
+        public string onFinish;
+        public string onStart;
     }
 }

@@ -25,62 +25,6 @@ namespace TextAdventure
         private ItemUsage[] useItemActions;
         //Dictionary<string,string> bla = new Dictionary<string, string> {{ } };
 
-        /// <summary>
-        ///     <see cref="Array"/> aller <see cref="Item"/>s
-        /// </summary>
-        public Item[] allItems = new Item[]
-        {
-            new Item
-            {
-                name ="schluessel",
-                description ="dieser schlüssel öffnet das tor zu 'ende'",
-                usableAt ="mitte",
-                usageType =0,
-                usageParam ="ende",
-                pickupCount =1,
-                visible = false
-            },
-            new Item
-            {
-                name ="'du hast das spiel durchgespielt' trophäe",
-                description ="du hast sämtliche hürden überwunden und das abenteuer durchgespielt",
-            },
-            new Item
-            {
-                name ="bausatz_1",
-                description ="ähnelt bausatz 2",
-                pickupCount =1,
-                combinabelWith ="bausatz_2",
-                combinableTo ="bombe",
-                visible = true
-            },
-            new Item
-            {
-                name ="bausatz_2",
-                description ="ähnelt bausatz 1",
-                pickupCount =1,
-                combinabelWith ="bausatz_1",
-                combinableTo ="bombe",
-                visible = true,
-            },
-            new Item
-            {
-                name ="bombe",
-                description ="kann kaputt machen",
-                usableAt ="labor",
-                usageType =0,
-                usageParam ="hoehle",
-                finishOnPickUp ="bastle was, das wummst!"
-            },
-            new Item
-            {
-                name="schwansen_modell",
-                description="ein ca 3mm langes modell von davids schwansen (1000x vergrößerung)",
-                pickupCount=-1,
-                startOnPickUp="david in den arsch treten",
-                visible = true,
-            }
-        };
 
         /// <summary>
         ///     Für Austausch untereinander
@@ -92,12 +36,14 @@ namespace TextAdventure
         private LocationMaster locMaster;
         private NPC_Master npcMaster;
         private DialogueMaster diaMaster;
+        private AdventureGUI main;
 
         /// <summary>
         ///     Füllt den <see cref="ItemUsage"/>-<see cref="Array"/>
         /// </summary>
-        public ItemMaster()
+        public ItemMaster(AdventureGUI owner)
         {
+            main = owner;
             useItemActions = new ItemUsage[] { item_Open_Door };
         }
 
@@ -105,8 +51,7 @@ namespace TextAdventure
         {
             foreach(Item i in allItems)
             {
-                if (i.finishOnPickUp.Length == 0) i.finishOnPickUp = null;
-                if (i.startOnPickUp.Length == 0) i.startOnPickUp = null;
+                if (i.onPickUp.Length == 0) i.onPickUp = null;
                 if (i.usableAt.Length == 0) i.usableAt = null;
                 if (i.usageParam.Length == 0) i.usageParam = null;
             }
@@ -193,20 +138,7 @@ namespace TextAdventure
                 Item newItem = Array.Find(allItems, i => i.name == name);
                 inventory.Add(newItem);
                 Console.WriteLine("you took: " + name);
-                if (newItem.finishOnPickUp != null)
-                {
-                    if (newItem.finishOnPickUp != "")
-                    {
-                        questMaster.completeQuest(newItem.finishOnPickUp);
-                    }
-                }
-                if (newItem.startOnPickUp != null)
-                {
-                    if (newItem.startOnPickUp != "")
-                    {
-                        questMaster.startQuest(newItem.startOnPickUp);
-                    }
-                }
+                main.fetchCommands(newItem.onPickUp, false, false);
                 if (--newItem.pickupCount == 0)
                 {
                     locMaster.currLoc.obtainableItems.RemoveAt(index);
@@ -242,13 +174,7 @@ namespace TextAdventure
             if (item1.combinabelWith == name2)
             {
                 Item newItem = Array.Find(allItems, i => i.name == item1.combinableTo);
-                if (newItem.finishOnPickUp != null)
-                {
-                    if (newItem.finishOnPickUp != "")
-                    {
-                        questMaster.completeQuest(newItem.finishOnPickUp);
-                    }
-                }
+                main.fetchCommands(newItem.onPickUp, false, false);
                 inventory.Add(newItem);
                 inventory.Remove(item1);
                 inventory.Remove(item2);
@@ -261,6 +187,65 @@ namespace TextAdventure
                 return false;
             }
         }    
+
+        /// <summary>
+        ///     <see cref="Array"/> aller <see cref="Item"/>s
+        /// </summary>
+        public Item[] allItems = new Item[]
+        {
+            new Item
+            {
+                name ="schluessel",
+                description ="dieser schlüssel öffnet das tor zu 'ende'",
+                usableAt ="mitte",
+                usageType =0,
+                usageParam ="ende",
+                pickupCount =1,
+                visible = false
+            },
+            new Item
+            {
+                name ="'du hast das spiel durchgespielt' trophäe",
+                description ="du hast sämtliche hürden überwunden und das abenteuer durchgespielt",
+            },
+            new Item
+            {
+                name ="bausatz_1",
+                description ="ähnelt bausatz 2",
+                pickupCount =1,
+                combinabelWith ="bausatz_2",
+                combinableTo ="bombe",
+                visible = true
+            },
+            new Item
+            {
+                name ="bausatz_2",
+                description ="ähnelt bausatz 1",
+                pickupCount =1,
+                combinabelWith ="bausatz_1",
+                combinableTo ="bombe",
+                visible = true,
+            },
+            new Item
+            {
+                name ="bombe",
+                description ="kann kaputt machen",
+                usableAt ="labor",
+                usageType =0,
+                usageParam ="hoehle",
+                onPickUp =
+                "dev>quest>complete>bastle was, das wummst!"
+            },
+            new Item
+            {
+                name="schwansen_modell",
+                description="ein ca 3mm langes modell von davids schwansen (1000x vergrößerung)",
+                pickupCount=-1,
+                onPickUp=
+                "dev>quest>start>david in den arsch treten",
+                visible = true,
+            }
+        };
     }
 
     /// <summary>
@@ -276,8 +261,7 @@ namespace TextAdventure
         public string usageParam { get; set; }
         public string description { get; set; }
         public int pickupCount { get; set; } = -1;
-        public string startOnPickUp { get; set; }
-        public string finishOnPickUp { get; set; }
+        public string onPickUp { get; set; }
         public bool visible { get; set; }
 }
 }
