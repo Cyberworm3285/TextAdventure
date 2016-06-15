@@ -12,20 +12,13 @@ namespace TextAdventure
         private LocationMaster locMaster;
         private ItemMaster itemMaster;
         private NPC_Master npcMaster;
+        private AdventureGUI main;
+
         public Dialogue currDialogue = null;
 
-        public void setNullReferneces()
+        public DialogueMaster(AdventureGUI owner)
         {
-            foreach(Dialogue d in dialogues)
-            {
-                if (d.denialMessage.Length == 0) d.denialMessage = null;
-                if (d.finishOnDialogue.Length == 0) d.finishOnDialogue = null;
-                if (d.requiredForDialogue.Length == 0) d.requiredForDialogue = null;
-                if (d.startOnDialogue.Length == 0) d.startOnDialogue = null;
-                if (d.getOnDialogue.Length == 0) d.getOnDialogue = null;
-                if (d.looseOnDialogue.Length == 0) d.looseOnDialogue = null;
-                if (d.nextDialogue.Length == 0) d.looseOnDialogue = null;
-            }
+            main = owner;
         }
 
         public void setMasters(QuestMaster q, LocationMaster l, ItemMaster i, NPC_Master n)
@@ -79,34 +72,7 @@ namespace TextAdventure
 
         private void onNewDialogue()
         {
-            if (currDialogue.finishOnDialogue != null)
-            {
-                Quest quest = Array.Find(questMaster.quests, q => q.name == currDialogue.finishOnDialogue);
-                if (quest != null)
-                {
-                    questMaster.completeQuest(quest.name);
-                }
-            }
-            if (currDialogue.startOnDialogue != null)
-            {
-                Quest quest = Array.Find(questMaster.quests, q => q.name == currDialogue.startOnDialogue);
-                if (quest != null)
-                {
-                    questMaster.startQuest(quest.name);
-                }
-            }
-            if (currDialogue.getOnDialogue != null)
-            {
-                foreach (string s in currDialogue.getOnDialogue)
-                {
-                    Item item = Array.Find(itemMaster.allItems, i => i.name == s);
-                    if (item != null)
-                    {
-                        itemMaster.inventory.Add(item);
-                        Console.WriteLine("added item: " + item.name);
-                    }
-                }
-            }
+            main.fetchCommands(currDialogue.onDialogue, false, false);
         }
 
         public Dialogue[] dialogues = new Dialogue[]
@@ -114,7 +80,7 @@ namespace TextAdventure
             new Dialogue
             {
                 name="david_01",
-                NPC_part = "ey ich hab en kleinen schwnansen. willste mal sehen?",
+                NPC_part = "ey ich hab en kleinen schwansen. willste mal sehen?",
                 answers = new string[] { "ja", "ne, fick dich" },
                 nextDialogue=new string[] { "david_02", null },
             },
@@ -124,7 +90,7 @@ namespace TextAdventure
                 NPC_part = "ja hier, bidde!",
                 answers = new string[] { "ja, dangge!" },
                 nextDialogue = new string[] {null},
-                getOnDialogue = new string[] { "schwansen_modell" },
+                onDialogue = "dev>item>give>schwansen_modell",
             },
         };
     }
@@ -133,14 +99,11 @@ namespace TextAdventure
     {
         public string name { get; set; }
         public string NPC_part { get; set; }
-        public string startOnDialogue { get; set; }
-        public string finishOnDialogue { get; set; }
+        public string onDialogue { get; set; }
         public string requiredForDialogue { get; set; }
         public bool finished { get; set; }
         public string denialMessage { get; set; }
         public string[] answers { get; set; }
         public string[] nextDialogue { get; set; }
-        public string[] looseOnDialogue { get; set; }
-        public string[] getOnDialogue { get; set; }
     }
 }

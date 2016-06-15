@@ -22,6 +22,7 @@ namespace TextAdventure
 
         private NPC_Master npcMaster;
         private DialogueMaster diaMaster;
+        private AdventureGUI main;
 
         /// <summary>
         ///     Momentan aktive <see cref="Location"/>
@@ -31,22 +32,10 @@ namespace TextAdventure
         /// <summary>
         ///     Konstruktor, der die aktive Position auf die erste <see cref="Location"/> setzt
         /// </summary>
-        public LocationMaster()
+        public LocationMaster(AdventureGUI owner)
         {
+            main = owner;
             currLoc = locations[0];
-        }
-
-        public void setNullRefernces()
-        {
-            foreach(Location l in locations)
-            {
-                if (l.alias.Length == 0) l.alias = null;
-                if (l.denialMessage.Length == 0) l.denialMessage = null;
-                if (l.completeOnDisvover.Length == 0) l.completeOnDisvover = null;
-                if (l.obtainableItems.Count == 0) l.obtainableItems = null;
-                if (l.startOnDiscover.Length == 0) l.startOnDiscover = null;
-                if (l.usableItems.Length == 0) l.usableItems = null;
-            }
         }
 
         /// <summary>
@@ -66,32 +55,14 @@ namespace TextAdventure
         ///     Beendet die <see cref="Quest"/>s der angegebenen <see cref="Location"/>
         /// </summary>
         /// <param name="loc">Die <see cref="Location"/></param>
-        private void completeOnDisvover(Location loc)
+        private void onDisvover(Location loc)
         {
-            if (loc.completeOnDisvover != null)
-            {
-                foreach (string s in loc.completeOnDisvover)
-                {
-                    Quest quest = Array.Find(questMaster.quests, q => q.name == s);
-                    questMaster.completeQuest(quest.name);
-                }
-            }
+            main.fetchCommands(loc.onDiscvover, false, false);
         }
 
-        /// <summary>
-        ///     Startet die <see cref="Quest"/>s der angegebenen <see cref="Location"/>
-        /// </summary>
-        /// <param name="loc">Die <see cref="Location"/></param>
-        private void startOnDiscover(Location loc)
+        private void onLeave(Location loc)
         {
-            if (loc.startOnDiscover != null)
-            {
-                foreach (string s in loc.startOnDiscover)
-                {
-                    Quest quest = Array.Find(questMaster.quests, q => q.name == s);
-                    questMaster.startQuest(quest.name);
-                }
-            }
+            main.fetchCommands(loc.onLeave, false, false);
         }
 
         /// <summary>
@@ -112,14 +83,29 @@ namespace TextAdventure
                 Console.WriteLine("Location not avaiable: " + name);
                 return;
             }
-            if (!loc.open)
+            int conIndex = Array.IndexOf(currLoc.connections, name);
+            if (conIndex == -1)
             {
-                Console.WriteLine(loc.denialMessage);
+                Location alias = Array.Find(locations, l => l.alias == name);
+                conIndex = Array.IndexOf(currLoc.connections, alias.name);
+            }
+            if ((!currLoc.connectionStatus[conIndex]) && (!devmode))
+            {
+                string message;
+                loc.denialMessage.TryGetValue(currLoc.name, out message);
+                Console.WriteLine(message);
                 return;
             }
             if (loc.discovered == false) { discover(loc); }
+            onLeave(loc);
             currLoc = loc;
             Console.WriteLine("your current location: " + currLoc.name);
+        }
+
+        public void changeConnectionStatus(Location loc, string name, bool status)
+        {
+            int index = Array.IndexOf(loc.connections, name);
+            loc.connectionStatus[index] = status;
         }
 
         /// <summary>
@@ -130,8 +116,7 @@ namespace TextAdventure
         {
             loc.discovered = true;
             Console.WriteLine("you discovered: " + loc.name);
-            completeOnDisvover(loc);
-            startOnDiscover(loc);
+            onDisvover(loc);
         }
 
         /// <summary>
@@ -146,7 +131,8 @@ namespace TextAdventure
                 open =true,
                 discovered = true,
                 description ="hier beginnt unser geniales nices abenteuer durch die wundersame welt der höööhle" ,
-                connections = new string[] { "mitte" }
+                connections = new string[] { "mitte" },
+                connectionStatus = new bool[] { true }
             },
             new Location {
                 name = "mitte",
@@ -155,10 +141,13 @@ namespace TextAdventure
                 discovered =false,
                 description ="hier is die midde, am boden liegt unter dreck ein schluessel",
                 connections = new string[] { "start", "ende", "labor" },
-                completeOnDisvover = new string[] {"Die ersten Schritte"},
-                startOnDiscover = new string[] {"Erreiche das Ende"},
+                connectionStatus = new bool[] { true, false, true },
+                onDiscvover =
+                "dev>quest>complete>Die ersten Schritte-"+
+                "dev>quest>start>Erreiche das Ende",
                 obtainableItems = new List<string> { "schluessel" },
                 usableItems = new string[] {"schluessel","bombe"},
+                denialMessage = new Dictionary<string, string>(){ { "start","test, yo!" },{"labor","is kaputt, yo!"} },
             },
             new Location
             {
@@ -167,9 +156,11 @@ namespace TextAdventure
                 open =false,
                 discovered =false,
                 description ="du hast die welt gerettet und es gibt nichts mehr für dich zu tun außer zu sterben,yo!",
-                completeOnDisvover = new string[] { "Erreiche das Ende" },
+                onDiscvover = 
+                "dev>quest>start>Erreiche das Ende",
                 connections =new string[] { "mitte" },
-                denialMessage = "du benötigst einen schlüssel um dieses tor zu öffnen"
+                connectionStatus = new bool[] { true },
+                denialMessage = new Dictionary<string, string>() { {"mitte", "du benötigst einen schlüssel um dieses tor zu öffnen" } }
             },
             new Location
             {
@@ -179,7 +170,9 @@ namespace TextAdventure
                 discovered =false,
                 description ="Krasse sachen sind hier",
                 connections =new string[] { "mitte","hoehle" },
-                startOnDiscover =new string[] { "bastle was, das wummst!" },
+                connectionStatus = new bool[] { true,true },
+                onDiscvover = 
+                "dev>quest>start>bastle was, das wummst!",
                 obtainableItems = new List<string> { "bausatz_1", "bausatz_2" },
                 usableItems =new string[] { "bombe"}
             },
@@ -190,7 +183,8 @@ namespace TextAdventure
                 open =false,
                 discovered =true,
                 description ="mit glück vlt ein umweg",
-                connections =new string[] {"ende" },
+                connections =new string[] { "ende" },
+                connectionStatus = new bool[] { true },
                // obtainableItems = new List<string> {"schwansen_modell"},
             }
         };
@@ -207,10 +201,11 @@ namespace TextAdventure
         public bool discovered { get; set; }
         public string description { get; set; }
         public string[] connections { get; set; }
-        public string[] completeOnDisvover { get; set; }
-        public string[] startOnDiscover { get; set; }
+        public bool[] connectionStatus { get; set; }
+        public string onDiscvover { get; set; }
+        public string onLeave { get; set; }
         public List<string> obtainableItems { get; set; }
         public string[] usableItems { get; set; }
-        public string denialMessage { get; set; }
+        public Dictionary<string,string> denialMessage { get; set; }
     }
 }

@@ -12,16 +12,12 @@ namespace TextAdventure
         private LocationMaster locMaster;
         private ItemMaster itemMaster;
         private DialogueMaster diaMaster;
+        private AdventureGUI main;
         public NPC currNPC = null;
 
-        public void setNullRefernces()
+        public NPC_Master(AdventureGUI owner)
         {
-            foreach(NPC n in npcs)
-            {
-                if (n.alias.Length == 0) n.alias = null;
-                if (n.finishOnDialogue.Length == 0) n.finishOnDialogue = null;
-                if (n.startOnDialogue.Length == 0) n.startOnDialogue = null;
-            }
+            main = owner;
         }
 
         public void setMasters(QuestMaster q, LocationMaster l, ItemMaster i, DialogueMaster d)
@@ -48,30 +44,7 @@ namespace TextAdventure
             currNPC = npc;
             Dialogue dia = Array.Find(diaMaster.dialogues, n => n.name == npc.initialDialogue);
             diaMaster.startDialogue(dia.name);
-            if (npc.finishOnDialogue != null)
-            {
-                Quest quest = Array.Find(questMaster.quests, q => q.name == npc.finishOnDialogue);
-                if (quest != null)
-                {
-                    questMaster.completeQuest(quest.name);
-                }
-                else
-                {
-                    Console.WriteLine("could not find quest: " + npc.finishOnDialogue);
-                }
-            }
-            if (npc.startOnDialogue != null)
-            {
-                Quest quest = Array.Find(questMaster.quests, q => q.name == npc.startOnDialogue);
-                if (quest != null)
-                {
-                    questMaster.completeQuest(quest.name);
-                }
-                else
-                {
-                    Console.WriteLine("could not find quest: " + npc.startOnDialogue);
-                }
-            }
+            main.fetchCommands(npc.onDialogue);
         }
 
         public NPC[] npcs = new NPC[]
@@ -91,7 +64,6 @@ namespace TextAdventure
         public string currLoc { get; set; }
         public string initialDialogue { get; set; }
         public string currDialogue { get; set; }
-        public string startOnDialogue { get; set; }
-        public string finishOnDialogue { get; set; }
+        public string onDialogue { get; set; }
     }
 }

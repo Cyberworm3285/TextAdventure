@@ -5,13 +5,14 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 using System.Xml.Serialization;
+using Newtonsoft;
 
 namespace TextAdventure
 {
     /// <summary>
     ///     Behandlung der Konsolen eingaben
     /// </summary>
-    class AdventureGUI
+    public class AdventureGUI
     {
         //look around goto mitte look around take;lookat schluessel goto labor look around take bausatz_1 take bausatz_2 combine bausatz_1 bausatz_2 lookat;use bombe goto höhle look around take;lookat schwansen_modell goto mysteriöser_eingang get inventory get quests
         //playthrough code + easter egg
@@ -19,17 +20,17 @@ namespace TextAdventure
         /// <summary>
         ///     Handler für <see cref="Quest"/>
         /// </summary>
-        private QuestMaster questMaster = new QuestMaster();
+        private QuestMaster questMaster;
         /// <summary>
         ///     Handler für <see cref="Location"/>
         /// </summary>
-        private LocationMaster locMaster = new LocationMaster();
+        private LocationMaster locMaster;
         /// <summary>
         ///     Handler für <see cref="Item"/>
         /// </summary>
-        private ItemMaster itemMaster = new ItemMaster();
-        private NPC_Master npcMaster = new NPC_Master();
-        private DialogueMaster diaMaster = new DialogueMaster();
+        private ItemMaster itemMaster;
+        private NPC_Master npcMaster;
+        private DialogueMaster diaMaster;
         private char commandDivider = '-', argDivider = '>';
         private string batchPathBase = Path.Combine(Directory.GetCurrentDirectory());
         private string batchPathFileName = "batchCommands.txt";
@@ -37,6 +38,11 @@ namespace TextAdventure
 
         public AdventureGUI()
         {
+            questMaster = new QuestMaster(this);
+            locMaster = new LocationMaster(this);
+            itemMaster = new ItemMaster(this);
+            diaMaster = new DialogueMaster(this);
+            npcMaster = new NPC_Master(this);
             questMaster.setMasters(locMaster, itemMaster, npcMaster, diaMaster);
             locMaster.setMasters(questMaster, itemMaster, npcMaster, diaMaster);
             itemMaster.setMasters(questMaster, locMaster, npcMaster, diaMaster);
@@ -130,17 +136,18 @@ namespace TextAdventure
         ///     Haupt-Funktion für Input
         /// </summary>
         /// <returns></returns>
-        public bool fetchCommands(string fixCommand="")
+        public bool fetchCommands(string fixCommand="", bool echoCommand = true, bool useCustomDivider = true)
         {
+            if (fixCommand == null) return false;
             if (!inStartUp && forceQuitAfterStartUp) return false;
             string command = (fixCommand=="")?Console.ReadLine():fixCommand;
-            if (fixCommand != "") Console.WriteLine(fixCommand);
+            if ((fixCommand != "") && (echoCommand)) Console.WriteLine(fixCommand);
             if (command.Length == 0)  return false;
-            List<string> commands = command.Split(new char[] { commandDivider }).ToList<string>();
+            List<string> commands = command.Split(new char[] { (useCustomDivider)?commandDivider:'-' }).ToList<string>();
             preProcess(commands);
             foreach(string c in commands)
             {
-                string[] arguments = c.Split(new char[] { argDivider });
+                string[] arguments = c.Split(new char[] { (useCustomDivider)?argDivider:'>' });
                 switch (arguments[0])
                 {
                     case "get":
@@ -343,9 +350,12 @@ namespace TextAdventure
         {
             switch(args[0])
             {
+                case "echo":
+                    Console.WriteLine(args[1]);
+                    break;
                 case "location":
                     Location loc = null;
-                    if(args.Length == 3) loc = Array.Find(locMaster.locations, l => l.name == args[2]);
+                    if(args.Length >= 3) loc = Array.Find(locMaster.locations, l => l.name == args[2]);
                     switch (args[1])
                     {
                         case "open":
@@ -353,6 +363,13 @@ namespace TextAdventure
                             if (loc != null)
                             {
                                 loc.open = true;
+                            }
+                            break;
+                        case "close_connection":
+                            Console.WriteLine(((loc == null) ? "kein gültiger parameter für 'close_connections': " : "location closed: ") + args[2]);
+                            if ((loc != null) && (args.Length == 4))
+                            {
+                                locMaster.changeConnectionStatus(loc, args[3], false);
                             }
                             break;
                         case "port":
@@ -371,12 +388,7 @@ namespace TextAdventure
                                 "alias: " + loc.alias + "\n" +
                                 "denial Message: " + loc.denialMessage + "\n" +
                                 "discovered: " + loc.discovered + "\n" +
-                                "open: " + loc.open + "\n" +
-                                "completeOnDicover:");
-                            foreach(string s in loc.completeOnDisvover??new string[] { "-" })
-                            {
-                                Console.WriteLine(s);
-                            }
+                                "open: " + loc.open + "\n");
                             Console.WriteLine("connections:");
                             foreach(string s in loc.connections ?? new string[] { "-" })
                             {
@@ -387,13 +399,20 @@ namespace TextAdventure
                             {
                                 Console.WriteLine(s);
                             }
-                            Console.WriteLine("startOnDiscover:");
-                            foreach(string s in loc.startOnDiscover ?? new string[] { "-" })
+                            Console.WriteLine("usableItems:");
+                            foreach(string s in loc.usableItems ?? new string[] { "-" })
                             {
                                 Console.WriteLine(s);
                             }
-                            Console.WriteLine("usableItems:");
-                            foreach(string s in loc.usableItems ?? new string[] { "-" })
+                            Console.WriteLine("onDiscover - script:");
+                            string[] script = (loc.onDiscvover==null)?new string[] { "no scrpit" }:loc.onDiscvover.Split(new char[] { '-' });
+                            foreach (string s in script)
+                            {
+                                Console.WriteLine(s);
+                            }
+                            Console.WriteLine("onLeave - script:");
+                            script = (loc.onLeave==null)?new string[] { "no script" } :loc.onLeave.Split(new char[] { '-' });
+                            foreach (string s in script)
                             {
                                 Console.WriteLine(s);
                             }
@@ -422,11 +441,16 @@ namespace TextAdventure
                                 Console.WriteLine("combinable with: " + item.combinabelWith);
                                 Console.WriteLine("combinable to: " + item.combinableTo);
                                 Console.WriteLine("pickupCount: " + item.pickupCount);
-                                Console.WriteLine("finishOnPickup: " + item.finishOnPickUp);
-                                Console.WriteLine("startOnPickup: " + item.startOnPickUp);
+
                                 Console.WriteLine("usableAt: " + item.usableAt);
                                 Console.WriteLine("usageParam; " + item.usageParam);
                                 Console.WriteLine("usageType: " + item.usageType);
+                                Console.WriteLine("onPickup - scrpit:");
+                                string[] scripts = (item.onPickUp == null) ? new string[] { "no script" } : item.onPickUp.Split(new char[] { '-' });
+                                foreach (string s in scripts)
+                                {
+                                    Console.WriteLine(s);
+                                }
                             }
                             break;
                     }
@@ -534,28 +558,7 @@ namespace TextAdventure
                                     }
                                     break;
                                 default:
-                                    if (args.Length == 3)
-                                    {
-                                        Location locQuest = Array.Find(locMaster.locations, l=>l.name == args[2]);
-                                        if (locQuest != null)
-                                        {
-                                            Console.WriteLine("Quest-Connections in " + locQuest.name);
-                                            Console.WriteLine("complete on discover:");
-                                            foreach(string quests in locQuest.completeOnDisvover)
-                                            {
-                                                Console.WriteLine(quests);
-                                            }
-                                            Console.WriteLine("start on discover:");
-                                            foreach(string quests in locQuest.startOnDiscover)
-                                            {
-                                                Console.WriteLine(quests);
-                                            }
-                                        }
-                                        else
-                                        {
-                                            Console.WriteLine("Location not found: " + args[2]);
-                                        }
-                                    }
+                                    Console.WriteLine("more parameters needed");
                                     break;
                             }
                             break;
@@ -606,59 +609,31 @@ namespace TextAdventure
                             break;
                     }
                     break;
-                case "xml":
-                    XmlSerializer xmlQuest = new XmlSerializer(typeof(Quest[]));
-                    XmlSerializer xmlLocation = new XmlSerializer(typeof(Location[]));
-                    XmlSerializer xmlItem = new XmlSerializer(typeof(Item[]));
-                    XmlSerializer xmlNPC = new XmlSerializer(typeof(NPC[]));
-                    XmlSerializer xmlDialogue = new XmlSerializer(typeof(Dialogue[]));
+                case "json":
                     switch (args[1])
                     {
                         case "reset_null":
-
                             Directory.CreateDirectory(Path.Combine(batchPathBase, "input", "null"));
                             Quest[] questDummy = new Quest[] { new Quest { } };
-                            StreamWriter sw = new StreamWriter(Path.Combine(batchPathBase, "input", "null", "quests.xml"));
-                            xmlQuest.Serialize(sw, questDummy);
-                            questDummy = null;
-                            Location[] locationDummy = new Location[] { new Location { } };
-                            sw = new StreamWriter(Path.Combine(batchPathBase, "output", "locations.xml"));
-                            xmlLocation.Serialize(sw, locationDummy);
-                            locationDummy = null;
+                            Location[] locDummy = new Location[] { new Location { } };
                             Item[] itemDummy = new Item[] { new Item { } };
-                            sw = new StreamWriter(Path.Combine(batchPathBase, "input", "null", "items.xml"));
-                            xmlItem.Serialize(sw, itemDummy);
-                            itemDummy = null;
                             NPC[] npcDummy = new NPC[] { new NPC { } };
-                            sw = new StreamWriter(Path.Combine(batchPathBase, "input", "null", "npcs.xml"));
-                            xmlNPC.Serialize(sw, npcDummy);
-                            npcDummy = null;
-                            Dialogue[] dialogueDummy = new Dialogue[] { new Dialogue { } };
-                            sw = new StreamWriter(Path.Combine(batchPathBase, "input", "null", "dialogues.xml"));
-                            xmlDialogue.Serialize(sw, dialogueDummy);
-                            dialogueDummy = null;
-                            sw.Close();
+                            Dialogue[] diaDummy = new Dialogue[] { new Dialogue { } };
+                            File.WriteAllText(Path.Combine(batchPathBase,"input","null","quests.json"), Newtonsoft.Json.JsonConvert.SerializeObject(questDummy, Newtonsoft.Json.Formatting.Indented));
+                            File.WriteAllText(Path.Combine(batchPathBase, "input", "null", "locations.json"), Newtonsoft.Json.JsonConvert.SerializeObject(locDummy, Newtonsoft.Json.Formatting.Indented));
+                            File.WriteAllText(Path.Combine(batchPathBase, "input", "null", "items.json"), Newtonsoft.Json.JsonConvert.SerializeObject(itemDummy, Newtonsoft.Json.Formatting.Indented));
+                            File.WriteAllText(Path.Combine(batchPathBase, "input", "null", "npcs.json"), Newtonsoft.Json.JsonConvert.SerializeObject(npcDummy, Newtonsoft.Json.Formatting.Indented));
+                            File.WriteAllText(Path.Combine(batchPathBase, "input", "null", "dialogues.json"), Newtonsoft.Json.JsonConvert.SerializeObject(diaDummy, Newtonsoft.Json.Formatting.Indented));
                             break;
                         case "load":
                             if (args.Length == 3)
                             try
                             {
-                                StreamReader sr = new StreamReader(Path.Combine(batchPathBase, "input", args[2], "quests.xml"));
-                                questMaster.quests =  (Quest[])xmlQuest.Deserialize(sr);
-                                sr = new StreamReader(Path.Combine(batchPathBase, "input", args[2], "locations.xml"));
-                                locMaster.locations = (Location[])xmlLocation.Deserialize(sr);
-                                sr = new StreamReader(Path.Combine(batchPathBase, "input", args[2], "items.xml"));
-                                itemMaster.allItems = (Item[])xmlItem.Deserialize(sr);
-                                sr = new StreamReader(Path.Combine(batchPathBase, "input", args[2], "npcs.xml"));
-                                npcMaster.npcs = (NPC[])xmlNPC.Deserialize(sr);
-                                sr = new StreamReader(Path.Combine(batchPathBase, "input", args[2], "dialogues.xml"));
-                                diaMaster.dialogues = (Dialogue[])xmlDialogue.Deserialize(sr);
-                                sr.Close();
-                                /*questMaster.setNullRefernces();
-                                locMaster.setNullRefernces();
-                                itemMaster.setNullReferences();
-                                npcMaster.setNullRefernces();
-                                diaMaster.setNullReferneces();*/
+                                questMaster.quests = Newtonsoft.Json.JsonConvert.DeserializeObject<Quest[]>(File.ReadAllText(Path.Combine(batchPathBase, "input", args[2], "quests.json")));
+                                locMaster.locations = Newtonsoft.Json.JsonConvert.DeserializeObject<Location[]>(File.ReadAllText(Path.Combine(batchPathBase, "input", args[2], "locations.json")));
+                                itemMaster.allItems = Newtonsoft.Json.JsonConvert.DeserializeObject<Item[]>(File.ReadAllText(Path.Combine(batchPathBase, "input", args[2], "items.json")));
+                                npcMaster.npcs = Newtonsoft.Json.JsonConvert.DeserializeObject<NPC[]>(File.ReadAllText(Path.Combine(batchPathBase,  "input", args[2], "npcs.json")));
+                                diaMaster.dialogues = Newtonsoft.Json.JsonConvert.DeserializeObject<Dialogue[]>(File.ReadAllText(Path.Combine(batchPathBase, "input", args[2], "dialogues.json")));
                             }
                             catch(DirectoryNotFoundException ex)
                             {
@@ -673,16 +648,11 @@ namespace TextAdventure
                             if (args.Length == 3)
                             {
                                 Directory.CreateDirectory(Path.Combine(batchPathBase, "input", args[2]));
-                                sw = new StreamWriter(Path.Combine(batchPathBase, "input", args[2], "quests.xml"));
-                                xmlQuest.Serialize(sw, questMaster.quests);
-                                sw = new StreamWriter(Path.Combine(batchPathBase, "input", args[2], "locations.xml"));
-                                xmlLocation.Serialize(sw, locMaster.locations);
-                                sw = new StreamWriter(Path.Combine(batchPathBase, "input", args[2], "items.xml"));
-                                xmlItem.Serialize(sw, itemMaster.allItems);
-                                sw = new StreamWriter(Path.Combine(batchPathBase, "input", args[2], "npcs.xml"));
-                                xmlNPC.Serialize(sw, npcMaster.npcs);
-                                sw = new StreamWriter(Path.Combine(batchPathBase, "input", args[2], "dialogue.xml"));
-                                xmlDialogue.Serialize(sw, diaMaster.dialogues);
+                                File.WriteAllText(Path.Combine(batchPathBase, "input", args[2], "quests.json"), Newtonsoft.Json.JsonConvert.SerializeObject(questMaster.quests, Newtonsoft.Json.Formatting.Indented));
+                                File.WriteAllText(Path.Combine(batchPathBase, "input", args[2], "locations.json"), Newtonsoft.Json.JsonConvert.SerializeObject(locMaster.locations, Newtonsoft.Json.Formatting.Indented));
+                                File.WriteAllText(Path.Combine(batchPathBase, "input", args[2], "items.json"), Newtonsoft.Json.JsonConvert.SerializeObject(itemMaster.allItems, Newtonsoft.Json.Formatting.Indented));
+                                File.WriteAllText(Path.Combine(batchPathBase, "input", args[2], "npcs.json"), Newtonsoft.Json.JsonConvert.SerializeObject(npcMaster.npcs, Newtonsoft.Json.Formatting.Indented));
+                                File.WriteAllText(Path.Combine(batchPathBase, "input", args[2], "dialogues.json"), Newtonsoft.Json.JsonConvert.SerializeObject(diaMaster.dialogues, Newtonsoft.Json.Formatting.Indented));
                             }
                             break;
                         default:
