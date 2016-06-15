@@ -372,6 +372,13 @@ namespace TextAdventure
                                 locMaster.changeConnectionStatus(loc, args[3], false);
                             }
                             break;
+                        case "open_location":
+                            Console.WriteLine(((loc == null) ? "kein gültiger parameter für 'close_connections': " : "location opened: ") + args[2]);
+                            if ((loc != null) && (args.Length == 4))
+                            {
+                                locMaster.changeConnectionStatus(loc, args[3], true);
+                            }
+                            break;
                         case "port":
                             if (loc != null)
                             {

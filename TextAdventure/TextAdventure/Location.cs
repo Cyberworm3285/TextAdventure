@@ -172,7 +172,9 @@ namespace TextAdventure
                 connections =new string[] { "mitte","hoehle" },
                 connectionStatus = new bool[] { true,true },
                 onDiscvover = 
-                "dev>quest>start>bastle was, das wummst!",
+                "dev>quest>start>bastle was, das wummst!-"+
+                "dev>location>close_connection>labor>mitte-"+
+                "dev>location>close_connection>mitte>labor",
                 obtainableItems = new List<string> { "bausatz_1", "bausatz_2" },
                 usableItems =new string[] { "bombe"}
             },
