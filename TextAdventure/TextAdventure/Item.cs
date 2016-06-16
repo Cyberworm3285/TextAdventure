@@ -70,7 +70,8 @@ namespace TextAdventure
             if (locMaster.currLoc.usableItems.Contains(itemName))
             {
                 Location loc = Array.Find(locMaster.locations, l => l.name == useParam);
-                loc.open = true;
+                int index = Array.IndexOf(locMaster.currLoc.connections, loc.name);
+                locMaster.currLoc.connectionStatus[index] = true;
                 inventory.Remove(inventory.Find(i => i.name == itemName));
                 Console.WriteLine("you opened the way to: " + useParam);
             }
