@@ -41,6 +41,11 @@ namespace TextAdventure
                 Console.WriteLine("could not find NPC: " + name);
                 return;
             }
+            if (!npc.known)
+            {
+                npc.known = true;
+                Console.WriteLine("new bekanntschaft: " + npc.name + ((npc.alias!=null)?" '"+npc.alias+"'":""));
+            }
             currNPC = npc;
             Dialogue dia = Array.Find(diaMaster.dialogues, n => n.name == npc.initialDialogue);
             diaMaster.startDialogue(dia.name);
@@ -52,15 +57,20 @@ namespace TextAdventure
             new NPC
             {
                 name = "david",
+                alias = "stinkender penner",
+                known = false,
                 currLoc = "hoehle",
                 initialDialogue = "david_01",
             },
         };
+
+        public List<NPC> graveyard = new List<NPC>();
     }
     public class NPC
     {
         public string name { get; set; }
         public string alias { get; set; }
+        public bool known { get; set; }
         public string currLoc { get; set; }
         public string initialDialogue { get; set; }
         public string currDialogue { get; set; }

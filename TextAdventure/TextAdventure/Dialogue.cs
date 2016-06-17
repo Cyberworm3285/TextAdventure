@@ -40,8 +40,8 @@ namespace TextAdventure
             currDialogue = dia;
             while (currDialogue.nextDialogue != null)
             {
-                onNewDialogue();
                 Console.WriteLine(npcMaster.currNPC.name + ": " + currDialogue.NPC_part);
+                onNewDialogue();
                 for (int i = 0; i < currDialogue.answers.Length; i++)
                 {
                     Console.WriteLine((i + 1) + ": " + currDialogue.answers[i]);
@@ -62,7 +62,7 @@ namespace TextAdventure
                 {
                     if (!itemMaster.inventory.Contains(Array.Find(itemMaster.allItems, i => i.name == currDialogue.requiredForDialogue)))
                     {
-                        Console.WriteLine(currDialogue.denialMessage);
+                        Console.WriteLine(npcMaster.currNPC.name + ": " + currDialogue.denialMessage);
                         currDialogue = oldDialogue;
                     }
                 }
@@ -81,8 +81,8 @@ namespace TextAdventure
             {
                 name="david_01",
                 NPC_part = "ey ich hab en kleinen schwansen. willste mal sehen?",
-                answers = new string[] { "ja", "ne, fick dich" },
-                nextDialogue=new string[] { "david_02", null },
+                answers = new string[] { "ja", "ne, fick dich", "stiiiiirb" },
+                nextDialogue=new string[] { "david_02", "david_03" , "david_04"},
             },
             new Dialogue
             {
@@ -90,7 +90,47 @@ namespace TextAdventure
                 NPC_part = "ja hier, bidde!",
                 answers = new string[] { "ja, dangge!" },
                 nextDialogue = new string[] {null},
-                onDialogue = "dev>item>give>schwansen_modell",
+                onDialogue =
+                "dev>item>give>schwansen_modell-"+
+                "dev>npc>change>initial_dialogue>david>david_03",
+            },
+            new Dialogue
+            {
+                name = "david_03",
+                NPC_part = "ich hasse dich jetz",
+                answers = new string[] { "ok", "stiiiiirb", "dicks dem, dem dicks gebuehret" },
+                nextDialogue = new string[] { null, "david_04", "david_05" },
+                onDialogue =
+                "dev>npc>change>initial_dialogue>david>david_03",
+            },
+            new Dialogue
+            {
+                name = "david_04",
+                NPC_part = "nooooin",
+                answers = new string[] { "huehuehue" },
+                nextDialogue = new string[] { null },
+                onDialogue =
+                "dev>npc>kill>david-"+
+                "dev>item>give>schwansen_modell",
+            },
+            new Dialogue
+            {
+                name = "david_05",
+                NPC_part = "fraesh",
+                answers = new string[] { "kein ding fuern king" },
+                nextDialogue = new string[] { "david_06" },
+                requiredForDialogue = "schwansen_modell",
+                denialMessage = "du brauchst das schwansen_modell um mich wieder zu beruhigen",
+                onDialogue =
+                "dev>npc>change>initial_dialogue>david>david_06-"+
+                "dev>item>remove>schwansen_modell",
+            },
+            new Dialogue
+            {
+                name = "david_06",
+                NPC_part = "ich bin zufrieden :)",
+                answers = new string[] { "ja nice!", "stiiiiirb" },
+                nextDialogue = new string[] { null, "david_04" },
             },
         };
     }

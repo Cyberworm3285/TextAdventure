@@ -143,7 +143,6 @@ namespace TextAdventure
             {
                 name = "start",
                 alias="",
-                open =true,
                 discovered = true,
                 description ="hier beginnt unser geniales nices abenteuer durch die wundersame welt der höööhle" ,
                 connections = new string[] { "mitte" },
@@ -152,7 +151,6 @@ namespace TextAdventure
             new Location {
                 name = "mitte",
                 alias="gammeltuer",
-                open =true,
                 discovered =false,
                 description ="hier is die midde, am boden liegt unter dreck ein schluessel",
                 connections = new string[] { "start", "ende", "labor" },
@@ -168,7 +166,6 @@ namespace TextAdventure
             {
                 name = "ende",
                 alias = "mysterioeser_eingang",
-                open =false,
                 discovered =false,
                 description ="du hast die welt gerettet und es gibt nichts mehr für dich zu tun außer zu sterben,yo!",
                 onDiscvover = 
@@ -181,7 +178,6 @@ namespace TextAdventure
             {
                 name = "labor",
                 alias = "flackernder_flur",
-                open =true,
                 discovered =false,
                 description ="Krasse sachen sind hier",
                 connections =new string[] { "mitte","hoehle" },
@@ -197,7 +193,6 @@ namespace TextAdventure
             {
                 name = "hoehle" ,
                 alias = "sprengloch",
-                open =false,
                 discovered =true,
                 description ="mit glück vlt ein umweg",
                 connections =new string[] { "ende" },
@@ -214,7 +209,6 @@ namespace TextAdventure
     {
         public string name { get; set; }
         public string alias { get; set; }
-        public bool open { get; set; }
         public bool discovered { get; set; }
         public string description { get; set; }
         public string[] connections { get; set; }

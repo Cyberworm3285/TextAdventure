@@ -252,8 +252,19 @@ namespace TextAdventure
                     }
                     Console.WriteLine((counter == 0) ? "no active quests" : "<end quests>");
                     break;
+                case "graveyard":
+                    Console.WriteLine("graveyard:");
+                    if (npcMaster.graveyard.Count == 0)
+                    {
+                        Console.WriteLine("alle noch am leben!");
+                    }
+                    foreach (NPC dead in npcMaster.graveyard)
+                    {
+                        Console.WriteLine(dead.name + ((dead.alias!=null)?", '" + dead.alias + "'":", ") + "gestorben bei: " + dead.currLoc);
+                    }
+                    break;
                 case "help":
-                    Console.WriteLine("avaible parameters: inventory, quests");
+                    Console.WriteLine("avaiable parameters: inventory, quests, graveyard");
                     break;
                 default:
                     Console.WriteLine("invalid param: " + param);
@@ -297,7 +308,7 @@ namespace TextAdventure
                         Console.WriteLine("NPCs:");
                         foreach(NPC n in npcs)
                         {
-                            Console.WriteLine("    " + n.name);
+                            Console.WriteLine("    " + ((n.known)?n.name:n.alias));
                         }
                     }
                     break;
@@ -365,22 +376,15 @@ namespace TextAdventure
                     if(args.Length >= 3) loc = Array.Find(locMaster.locations, l => l.name == args[2]);
                     switch (args[1])
                     {
-                        case "open":
-                            Console.WriteLine(((loc==null)?"kein gültiger parameter für 'location open': ":"location opened: ") + args[2]);
-                            if (loc != null)
-                            {
-                                loc.open = true;
-                            }
-                            break;
                         case "close_connection":
-                            Console.WriteLine(((loc == null) ? "kein gültiger parameter für 'close_connections': " : "location closed: ") + args[2]);
+                            Console.WriteLine(((loc == null) ? "kein gültiger parameter für 'close_connections': " : "connection closed: ") + args[2]);
                             if ((loc != null) && (args.Length == 4))
                             {
                                 locMaster.changeConnectionStatus(loc, args[3], false);
                             }
                             break;
-                        case "open_location":
-                            Console.WriteLine(((loc == null) ? "kein gültiger parameter für 'close_connections': " : "location opened: ") + args[2]);
+                        case "open_connection":
+                            Console.WriteLine(((loc == null) ? "kein gültiger parameter für 'open_connections': " : "connection opened: ") + args[2]);
                             if ((loc != null) && (args.Length == 4))
                             {
                                 locMaster.changeConnectionStatus(loc, args[3], true);
@@ -389,7 +393,6 @@ namespace TextAdventure
                         case "port":
                             if (loc != null)
                             {
-                                loc.open = true;
                                 locMaster.switchLoc(loc.name,true);
                             }
                             Console.WriteLine(((loc == null) ? "kein gültiger parameter für 'location port': " : "ported to location: ") + args[2]);
@@ -400,12 +403,12 @@ namespace TextAdventure
                                 "name: " + loc.name + "\n" +
                                 "description: " + loc.description + "\n" +
                                 "alias: " + loc.alias + "\n" +
-                                "discovered: " + loc.discovered + "\n" +
-                                "open: " + loc.open + "\n");
+                                "discovered: " + loc.discovered);
                             Console.WriteLine("connections:");
+                            int counter = 0;
                             foreach(string s in loc.connections ?? new string[] { "-" })
                             {
-                                Console.WriteLine(s);
+                                Console.WriteLine(s + " : " + loc.connectionStatus[counter++]);
                             }
                             Console.WriteLine("obtainableItems:");
                             foreach(string s in loc.obtainableItems ?? new List<string> { "-" })
@@ -418,7 +421,7 @@ namespace TextAdventure
                                 Console.WriteLine(s);
                             }
                             Console.WriteLine("denial Message: ");
-                            foreach(KeyValuePair<string,string> k in loc.denialMessage)
+                            foreach(KeyValuePair<string,string> k in loc.denialMessage ?? new Dictionary<string, string>() { { "not avaiable","not avaible" } })
                             {
                                 Console.WriteLine("key: " + k.Key + " value: " + k.Value);
                             }
@@ -448,7 +451,7 @@ namespace TextAdventure
                     switch (args[1])
                     {
                         case "give":
-                            Console.WriteLine(((item == null) ? "kein gültiger parameter für 'item give': " : "gave item: ") + args[2]);
+                            Console.WriteLine(((item == null) ? "kein gültiger parameter für 'item give': " : "obtained item: ") + args[2]);
                             if (item != null)
                             {
                                 itemMaster.inventory.Add(item);
@@ -703,6 +706,7 @@ namespace TextAdventure
                                 itemMaster.allItems = Newtonsoft.Json.JsonConvert.DeserializeObject<Item[]>(File.ReadAllText(Path.Combine(batchPathBase, "input", args[2], "items.json")));
                                 npcMaster.npcs = Newtonsoft.Json.JsonConvert.DeserializeObject<NPC[]>(File.ReadAllText(Path.Combine(batchPathBase,  "input", args[2], "npcs.json")));
                                 diaMaster.dialogues = Newtonsoft.Json.JsonConvert.DeserializeObject<Dialogue[]>(File.ReadAllText(Path.Combine(batchPathBase, "input", args[2], "dialogues.json")));
+                                locMaster.currLoc = locMaster.locations[0];
                             }
                             catch(DirectoryNotFoundException ex)
                             {
@@ -729,6 +733,70 @@ namespace TextAdventure
                             break;
                         default:
                             Console.WriteLine("invalid param: " + args[1]);
+                            break;
+                    }
+                    break;
+                case "npc":
+                    NPC npc;
+                    switch(args[1])
+                    {
+                        case "change":
+                            npc = Array.Find(npcMaster.npcs, n => n.name == args[3]);
+                            if (npc == null)
+                            {
+                                Console.WriteLine("npc not found: " + args[3]);
+                                return;
+                            }
+                            switch (args[2])
+                            {
+                                case "location":
+                                    Location locChange = Array.Find(locMaster.locations, l => l.name == args[4]);
+                                    if (locChange != null)
+                                    {
+                                        npc.currLoc = locChange.name;
+                                    } 
+                                    else
+                                    {
+                                        Console.WriteLine("location not found: " + args[4]);
+                                    }
+                                    break;
+                                case "initial_dialogue":
+                                    Dialogue diaChange = Array.Find(diaMaster.dialogues, d => d.name == args[4]);
+                                    if (diaChange != null)
+                                    {
+                                        npc.initialDialogue = diaChange.name;
+                                    }
+                                    else
+                                    {
+                                        Console.WriteLine("dialogue not found: " + args[4]);
+                                    }
+                                    break;
+                                case "help":
+                                    Console.WriteLine("avaiable parameters: location+2, initial_dialogue+2");
+                                    break;
+                                default:
+                                    Console.WriteLine("invalid parameter: " + args[2]);
+                                    break;
+                            }
+                            break;
+                        case "kill":
+                            npc = npc = Array.Find(npcMaster.npcs, n => n.name == args[2]);
+                            if (npc == null)
+                            {
+                                Console.WriteLine("npc not found: " + args[3]);
+                                return;
+                            }
+                            List<NPC> tempList = npcMaster.npcs.ToList<NPC>();
+                            tempList.Remove(npc);
+                            npcMaster.graveyard.Add(npc);
+                            npcMaster.npcs = tempList.ToArray();
+                            Console.WriteLine("killed: " + npc.name);
+                            break;
+                        case "help":
+                            Console.WriteLine("avaiable parameters: change+x, kill+1");
+                            break;
+                        default:
+                            Console.WriteLine("invalid parameter: " + args[1]);
                             break;
                     }
                     break;

@@ -118,7 +118,7 @@ namespace TextAdventure
                 active = true,
                 description = "gehe zur mitte um weiterzukommen",
                 onFinish = 
-                "dev>item>give>schluessel"
+                "dev>echo>hier stinkts..."
             },
             new Quest
             {
