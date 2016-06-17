@@ -73,14 +73,14 @@ namespace TextAdventure
         {
             Location loc = Array.Find(locations, l => l.name == name);
             if (loc == null) loc = Array.Find(locations, l => l.alias == name);
-            if (!(currLoc.connections.Contains(loc.name) || devmode))
-            {
-                Console.WriteLine("location not accesible from: " + currLoc.name);
-                return;
-            }
             if (loc == null)
             {
                 Console.WriteLine("Location not avaiable: " + name);
+                return;
+            }
+            if (!(currLoc.connections.Contains(loc.name) || devmode))
+            {
+                Console.WriteLine("location not accesible from: " + currLoc.name);
                 return;
             }
             int conIndex = Array.IndexOf(currLoc.connections, name);
@@ -92,7 +92,22 @@ namespace TextAdventure
             if ((!currLoc.connectionStatus[conIndex]) && (!devmode))
             {
                 string message;
-                loc.denialMessage.TryGetValue(currLoc.name, out message);
+                try
+                {
+                    loc.denialMessage.TryGetValue(currLoc.name, out message);
+                }
+                catch(NullReferenceException ex)
+                {
+                    try
+                    {
+                        loc.denialMessage.TryGetValue("default", out message);
+                    }
+                    catch(NullReferenceException ex2)
+                    {
+                        Console.WriteLine("[Error] no default value for denial from location:" + currLoc.name);
+                        message = "[empty denial]";
+                    }
+                }
                 Console.WriteLine(message);
                 return;
             }
@@ -147,7 +162,7 @@ namespace TextAdventure
                 "dev>quest>start>Erreiche das Ende",
                 obtainableItems = new List<string> { "schluessel" },
                 usableItems = new string[] {"schluessel","bombe"},
-                denialMessage = new Dictionary<string, string>(){ { "start","test, yo!" },{"labor","is kaputt, yo!"} },
+                denialMessage = new Dictionary<string, string>(){ { "start","test, yo!" },{"labor","is kaputt, yo!"}, { "default","[info] so war das nicht gedacht" } },
             },
             new Location
             {
@@ -157,10 +172,10 @@ namespace TextAdventure
                 discovered =false,
                 description ="du hast die welt gerettet und es gibt nichts mehr für dich zu tun außer zu sterben,yo!",
                 onDiscvover = 
-                "dev>quest>start>Erreiche das Ende",
+                "dev>quest>complete>Erreiche das Ende",
                 connections =new string[] { "mitte" },
                 connectionStatus = new bool[] { true },
-                denialMessage = new Dictionary<string, string>() { {"mitte", "du benötigst einen schlüssel um dieses tor zu öffnen" } }
+                denialMessage = new Dictionary<string, string>() { {"mitte", "du benötigst einen schlüssel um dieses tor zu öffnen" }, { "default","[info] so war das nicht gedacht" } }
             },
             new Location
             {

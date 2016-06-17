@@ -96,6 +96,11 @@ namespace TextAdventure
         public void startQuest(string name)
         {
             Quest quest = Array.Find(quests, q => q.name == name);
+            if (quest.active)
+            {
+                Console.WriteLine("quest already active: " + quest.name);
+                return;
+            }
             quest.active = true;
             Console.WriteLine("started quest: " + name);
             onStartQuest(name);

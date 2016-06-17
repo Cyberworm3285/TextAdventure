@@ -252,6 +252,9 @@ namespace TextAdventure
                     }
                     Console.WriteLine((counter == 0) ? "no active quests" : "<end quests>");
                     break;
+                case "help":
+                    Console.WriteLine("avaible parameters: inventory, quests");
+                    break;
                 default:
                     Console.WriteLine("invalid param: " + param);
                     break;
@@ -297,6 +300,9 @@ namespace TextAdventure
                             Console.WriteLine("    " + n.name);
                         }
                     }
+                    break;
+                case "help":
+                    Console.WriteLine("avaiable parameters: around");
                     break;
                 default:
                     Console.WriteLine("invalid param: " + param);
@@ -351,6 +357,7 @@ namespace TextAdventure
             switch(args[0])
             {
                 case "echo":
+                    if (args.Length < 2) return;
                     Console.WriteLine(args[1]);
                     break;
                 case "location":
@@ -393,7 +400,6 @@ namespace TextAdventure
                                 "name: " + loc.name + "\n" +
                                 "description: " + loc.description + "\n" +
                                 "alias: " + loc.alias + "\n" +
-                                "denial Message: " + loc.denialMessage + "\n" +
                                 "discovered: " + loc.discovered + "\n" +
                                 "open: " + loc.open + "\n");
                             Console.WriteLine("connections:");
@@ -411,6 +417,11 @@ namespace TextAdventure
                             {
                                 Console.WriteLine(s);
                             }
+                            Console.WriteLine("denial Message: ");
+                            foreach(KeyValuePair<string,string> k in loc.denialMessage)
+                            {
+                                Console.WriteLine("key: " + k.Key + " value: " + k.Value);
+                            }
                             Console.WriteLine("onDiscover - script:");
                             string[] script = (loc.onDiscvover==null)?new string[] { "no scrpit" }:loc.onDiscvover.Split(new char[] { '-' });
                             foreach (string s in script)
@@ -424,8 +435,11 @@ namespace TextAdventure
                                 Console.WriteLine(s);
                             }
                             break;
+                        case "help":
+                            Console.WriteLine("avaiable parameters: open+1, close_connection+2, port+1, get_info");
+                            break;
                         default:
-                            
+                            Console.WriteLine("invalid param: " + args[1]);
                             break;
                     }
                     break;
@@ -438,6 +452,13 @@ namespace TextAdventure
                             if (item != null)
                             {
                                 itemMaster.inventory.Add(item);
+                            }
+                            break;
+                        case "remove":
+                            Console.WriteLine(((item == null) ? "kein gültiger parameter für 'item give': " : "removed item: ") + args[2]);
+                            if (item != null)
+                            {
+                                itemMaster.inventory.Remove(item);
                             }
                             break;
                         case "get_info":
@@ -459,6 +480,12 @@ namespace TextAdventure
                                     Console.WriteLine(s);
                                 }
                             }
+                            break;
+                        case "help":
+                            Console.WriteLine("avaiable parameters: give+1, remove+1, get_info");
+                            break;
+                        default:
+                            Console.WriteLine("invalid param: " + args[1]);
                             break;
                     }
                     break;
@@ -564,29 +591,61 @@ namespace TextAdventure
                                         Console.WriteLine(q.name);
                                     }
                                     break;
+                                case "finished":
+                                    Console.WriteLine("finished quests:");
+                                    foreach (Quest q in Array.FindAll(questMaster.quests, q=>q.finished))
+                                    {
+                                        Console.WriteLine(q.name);
+                                    }
+                                    break;
+                                case "unfinished":
+                                    Console.WriteLine("unfinished quests:");
+                                    foreach (Quest q in Array.FindAll(questMaster.quests, q => !q.finished))
+                                    {
+                                        Console.WriteLine(q.name);
+                                    }
+                                    break;
+                                case "help":
+                                    Console.WriteLine("avaiable parameters: all, finished, unfinished");
+                                    break;
                                 default:
                                     Console.WriteLine("more parameters needed");
                                     break;
                             }
                             break;
+                        case "help":
+                            Console.WriteLine("avaiable parameters: complete+1,start+1,deactivate+1,activate+1,rest,get+1");
+                            break;
+                        default:
+                            Console.WriteLine("invalid param: " + args[1]);
+                            break;
                     }
                     break;
                 case "set":
+                    if (args.Length!=3)
+                    {
+                        Console.WriteLine("invalid parameter count");
+                        return;
+                    }
                     switch(args[1])
                     {
                         case "command_divider":
-                            if (args.Length == 3)
-                            {
-                                commandDivider = args[2][0];
-                                Console.WriteLine("new command-divider: '" + commandDivider + "'");
-                            }
+                            commandDivider = args[2][0];
+                            Console.WriteLine("new command-divider: '" + commandDivider + "'");
                             break;
                         case "arg_divider":
-                            if (args.Length == 3)
-                            {
-                                argDivider = args[2][0];
-                                Console.WriteLine("new arg-divider: '" + argDivider + "'");
-                            }
+                            argDivider = args[2][0];
+                            Console.WriteLine("new arg-divider: '" + argDivider + "'");
+                            break;
+                        case "batch_filename":
+                            batchPathFileName = args[2];
+                            Console.WriteLine("new batch filename: '" + batchPathFileName +"'");
+                            break;
+                        case "help":
+                            Console.WriteLine("avaiable parameters: command_divider+1,arg_divider+1,batch_filename");
+                            break;
+                        default:
+                            Console.WriteLine("invalid param: " + args[1]);
                             break;
                     }
                     break;
@@ -610,6 +669,9 @@ namespace TextAdventure
                         case "change_filename":
                             batchPathFileName = args[2];
                             Console.WriteLine("new batchCommand-Filename: " + batchPathFileName);
+                            break;
+                        case "help":
+                            Console.WriteLine("avaiable parameters: load, change_filename+1");
                             break;
                         default:
                             Console.WriteLine("invalid param in 'dev batch': " + args[1]);
@@ -661,14 +723,20 @@ namespace TextAdventure
                                 File.WriteAllText(Path.Combine(batchPathBase, "input", args[2], "npcs.json"), Newtonsoft.Json.JsonConvert.SerializeObject(npcMaster.npcs, Newtonsoft.Json.Formatting.Indented));
                                 File.WriteAllText(Path.Combine(batchPathBase, "input", args[2], "dialogues.json"), Newtonsoft.Json.JsonConvert.SerializeObject(diaMaster.dialogues, Newtonsoft.Json.Formatting.Indented));
                             }
+                            break;;
+                        case "help":
+                            Console.WriteLine("avaiable parameters: reset_null, load+1, save+1");
                             break;
                         default:
-                            Console.WriteLine("invalid param in 'xml load': " + args[1]);
+                            Console.WriteLine("invalid param: " + args[1]);
                             break;
                     }
                     break;
+                case "help":
+                    Console.WriteLine("avaiable parameters: echo+1, location+x,item+x,quest+x,set+1,batch+x,json+x");
+                    break;
                 default:
-                    Console.WriteLine("invalid command: " + args[0]);
+                    Console.WriteLine("invalid dev command: " + args[0]);
                     break;
             }
         }
