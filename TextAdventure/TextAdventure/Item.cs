@@ -17,16 +17,6 @@ namespace TextAdventure
         public List<Item> inventory = new List<Item>();
 
         /// <summary>
-        ///     <see cref="Delegate"/> für <see cref="ItemUsage"/>-Funtionen
-        /// </summary>
-        /// <param name="itemName">Zu benutzendes <see cref="Item"/></param>
-        /// <param name="useParam">Sonstige Parameter</param>
-        delegate void ItemUsage(string itemName, string useParam);
-        private ItemUsage[] useItemActions;
-        //Dictionary<string,string> bla = new Dictionary<string, string> {{ } };
-
-
-        /// <summary>
         ///     Für Austausch untereinander
         /// </summary>
         private QuestMaster questMaster;
@@ -44,7 +34,6 @@ namespace TextAdventure
         public ItemMaster(AdventureGUI owner)
         {
             main = owner;
-            useItemActions = new ItemUsage[] { item_Open_Door };
         }
 
         /// <summary>
@@ -58,23 +47,6 @@ namespace TextAdventure
             questMaster = q;
             npcMaster = n;
             diaMaster = d;
-        }
-
-        /// <summary>
-        ///     <see cref="ItemUsage"/>-Methode zum Türen öffnen
-        /// </summary>
-        /// <param name="itemName">Zu benutzendes <see cref="Item"/></param>
-        /// <param name="useParam">Sonstige Parameter</param>
-        private void item_Open_Door(string itemName, string useParam)
-        {
-            if (locMaster.currLoc.usableItems.Contains(itemName))
-            {
-                Location loc = Array.Find(locMaster.locations, l => l.name == useParam);
-                int index = Array.IndexOf(locMaster.currLoc.connections, loc.name);
-                locMaster.currLoc.connectionStatus[index] = true;
-                inventory.Remove(inventory.Find(i => i.name == itemName));
-                Console.WriteLine("you opened the way to: " + useParam);
-            }
         }
 
         /// <summary>
@@ -108,7 +80,7 @@ namespace TextAdventure
             }
             if (item.usableAt == locMaster.currLoc.name)
             {
-                useItemActions[item.usageType](name, item.usageParam);
+                main.fetchCommands(item.onUsage, false, false);
             }
             else
             {
@@ -189,8 +161,8 @@ namespace TextAdventure
                 name ="schluessel",
                 description ="dieser schlüssel öffnet das tor zu 'ende'",
                 usableAt ="mitte",
-                usageType =0,
-                usageParam ="ende",
+                onUsage = 
+                "dev>location>open_connection>mitte>ende",
                 pickupCount =1,
                 visible = false
             },
@@ -222,8 +194,8 @@ namespace TextAdventure
                 name ="bombe",
                 description ="kann kaputt machen",
                 usableAt ="labor",
-                usageType =0,
-                usageParam ="hoehle",
+                onUsage =
+                "dev>location>open_connection>mitte>ende",
                 onPickUp =
                 "dev>quest>complete>bastle was, das wummst!"
             },
@@ -248,8 +220,7 @@ namespace TextAdventure
         public string combinabelWith { get; set; }
         public string combinableTo { get; set; }
         public string usableAt { get; set; }
-        public int usageType { get; set; }
-        public string usageParam { get; set; }
+        public string onUsage { get; set; }
         public string description { get; set; }
         public int pickupCount { get; set; } = -1;
         public string onPickUp { get; set; }

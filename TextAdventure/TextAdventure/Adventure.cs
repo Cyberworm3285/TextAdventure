@@ -384,7 +384,7 @@ namespace TextAdventure
                             }
                             break;
                         case "open_connection":
-                            Console.WriteLine(((loc == null) ? "kein gültiger parameter für 'open_connections': " : "connection opened: ") + args[2]);
+                            Console.WriteLine(((loc == null) ? "kein gültiger parameter für 'open_connections': " : "connection opened: ") + args[2] + ">" + args[3]);
                             if ((loc != null) && (args.Length == 4))
                             {
                                 locMaster.changeConnectionStatus(loc, args[3], true);
@@ -472,10 +472,7 @@ namespace TextAdventure
                                 Console.WriteLine("combinable with: " + item.combinabelWith);
                                 Console.WriteLine("combinable to: " + item.combinableTo);
                                 Console.WriteLine("pickupCount: " + item.pickupCount);
-
                                 Console.WriteLine("usableAt: " + item.usableAt);
-                                Console.WriteLine("usageParam; " + item.usageParam);
-                                Console.WriteLine("usageType: " + item.usageType);
                                 Console.WriteLine("onPickup - scrpit:");
                                 string[] scripts = (item.onPickUp == null) ? new string[] { "no script" } : item.onPickUp.Split(new char[] { '-' });
                                 foreach (string s in scripts)
