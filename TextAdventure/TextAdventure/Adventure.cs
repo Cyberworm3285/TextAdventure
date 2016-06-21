@@ -32,7 +32,7 @@ namespace TextAdventure
         private NPC_Master npcMaster;
         private DialogueMaster diaMaster;
         private char commandDivider = '-', argDivider = '>';
-        private string batchPathBase = Path.Combine(Directory.GetCurrentDirectory());
+        private string PathBase = Path.Combine(Directory.GetCurrentDirectory());
         private string batchPathFileName = "batchCommands.txt";
         private bool inStartUp, forceQuitAfterStartUp = false;
 
@@ -50,7 +50,7 @@ namespace TextAdventure
             diaMaster.setMasters(questMaster, locMaster, itemMaster, npcMaster);
             try
             {
-                string[] startup = File.ReadAllLines(Path.Combine(batchPathBase,"startUp.txt"));
+                string[] startup = File.ReadAllLines(Path.Combine(PathBase,"startUp.txt"));
                 if (startup.Length != 0)
                 {
                     inStartUp = true;
@@ -655,7 +655,7 @@ namespace TextAdventure
                         case "load":
                             try
                             {
-                                string[] batchCommands = File.ReadAllLines(Path.Combine(batchPathBase, batchPathFileName));
+                                string[] batchCommands = File.ReadAllLines(Path.Combine(PathBase, batchPathFileName));
                                 foreach (string s in batchCommands)
                                 {
                                     fetchCommands(s);
@@ -663,7 +663,7 @@ namespace TextAdventure
                             }
                             catch(FileNotFoundException ex)
                             {
-                                Console.WriteLine("file not found: " + Path.Combine(batchPathBase,batchPathFileName));
+                                Console.WriteLine("file not found: " + Path.Combine(PathBase,batchPathFileName));
                             }
                             break;
                         case "change_filename":
@@ -682,47 +682,67 @@ namespace TextAdventure
                     switch (args[1])
                     {
                         case "reset_null":
-                            Directory.CreateDirectory(Path.Combine(batchPathBase, "input", "null"));
+                            Directory.CreateDirectory(Path.Combine(PathBase, "input", "null"));
                             Quest[] questDummy = new Quest[] { new Quest { } };
                             Location[] locDummy = new Location[] { new Location { } };
                             Item[] itemDummy = new Item[] { new Item { } };
                             NPC[] npcDummy = new NPC[] { new NPC { } };
                             Dialogue[] diaDummy = new Dialogue[] { new Dialogue { } };
-                            File.WriteAllText(Path.Combine(batchPathBase,"input","null","quests.json"), Newtonsoft.Json.JsonConvert.SerializeObject(questDummy, Newtonsoft.Json.Formatting.Indented));
-                            File.WriteAllText(Path.Combine(batchPathBase, "input", "null", "locations.json"), Newtonsoft.Json.JsonConvert.SerializeObject(locDummy, Newtonsoft.Json.Formatting.Indented));
-                            File.WriteAllText(Path.Combine(batchPathBase, "input", "null", "items.json"), Newtonsoft.Json.JsonConvert.SerializeObject(itemDummy, Newtonsoft.Json.Formatting.Indented));
-                            File.WriteAllText(Path.Combine(batchPathBase, "input", "null", "npcs.json"), Newtonsoft.Json.JsonConvert.SerializeObject(npcDummy, Newtonsoft.Json.Formatting.Indented));
-                            File.WriteAllText(Path.Combine(batchPathBase, "input", "null", "dialogues.json"), Newtonsoft.Json.JsonConvert.SerializeObject(diaDummy, Newtonsoft.Json.Formatting.Indented));
+                            File.WriteAllText(Path.Combine(PathBase,"input","null","quests.json"), Newtonsoft.Json.JsonConvert.SerializeObject(questDummy, Newtonsoft.Json.Formatting.Indented));
+                            File.WriteAllText(Path.Combine(PathBase, "input", "null", "locations.json"), Newtonsoft.Json.JsonConvert.SerializeObject(locDummy, Newtonsoft.Json.Formatting.Indented));
+                            File.WriteAllText(Path.Combine(PathBase, "input", "null", "items.json"), Newtonsoft.Json.JsonConvert.SerializeObject(itemDummy, Newtonsoft.Json.Formatting.Indented));
+                            File.WriteAllText(Path.Combine(PathBase, "input", "null", "npcs.json"), Newtonsoft.Json.JsonConvert.SerializeObject(npcDummy, Newtonsoft.Json.Formatting.Indented));
+                            File.WriteAllText(Path.Combine(PathBase, "input", "null", "dialogues.json"), Newtonsoft.Json.JsonConvert.SerializeObject(diaDummy, Newtonsoft.Json.Formatting.Indented));
                             break;
                         case "load":
                             if (args.Length == 3)
-                            try
                             {
-                                questMaster.quests = Newtonsoft.Json.JsonConvert.DeserializeObject<Quest[]>(File.ReadAllText(Path.Combine(batchPathBase, "input", args[2], "quests.json")));
-                                locMaster.locations = Newtonsoft.Json.JsonConvert.DeserializeObject<Location[]>(File.ReadAllText(Path.Combine(batchPathBase, "input", args[2], "locations.json")));
-                                itemMaster.allItems = Newtonsoft.Json.JsonConvert.DeserializeObject<Item[]>(File.ReadAllText(Path.Combine(batchPathBase, "input", args[2], "items.json")));
-                                npcMaster.npcs = Newtonsoft.Json.JsonConvert.DeserializeObject<NPC[]>(File.ReadAllText(Path.Combine(batchPathBase,  "input", args[2], "npcs.json")));
-                                diaMaster.dialogues = Newtonsoft.Json.JsonConvert.DeserializeObject<Dialogue[]>(File.ReadAllText(Path.Combine(batchPathBase, "input", args[2], "dialogues.json")));
-                                locMaster.currLoc = locMaster.locations[0];
-                            }
-                            catch(DirectoryNotFoundException ex)
-                            {
-                                Console.WriteLine("dir not found: " + args[2]);
-                            }
-                            catch(FileNotFoundException ex)
-                            {
-                                Console.WriteLine("files not found: " + Path.Combine(args[2],".."));
+                                string[] subDirs = null;
+                                try
+                                {
+                                    subDirs = Directory.EnumerateDirectories(Path.Combine(PathBase, "input", args[2])).ToArray();
+                                }
+                                catch (DirectoryNotFoundException ex)
+                                {
+                                    Console.WriteLine("dir not found: " + args[2]);
+                                }
+                                List<Quest> quests = new List<Quest>();
+                                List<Location> locs = new List<Location>();
+                                List<Item> items = new List<Item>();
+                                List<NPC> npcs = new List<NPC>();
+                                List<Dialogue> dias = new List<Dialogue>();
+                                foreach (string dir in subDirs)
+                                {
+                                    try
+                                    {
+                                        quests.AddRange(    Newtonsoft.Json.JsonConvert.DeserializeObject<Quest[]>(     File.ReadAllText(Path.Combine(dir, "quests.json"))));
+                                        locs.AddRange(      Newtonsoft.Json.JsonConvert.DeserializeObject<Location[]>(  File.ReadAllText(Path.Combine(dir, "locations.json"))));
+                                        items.AddRange(     Newtonsoft.Json.JsonConvert.DeserializeObject<Item[]>(      File.ReadAllText(Path.Combine(dir, "items.json"))));
+                                        npcs.AddRange(      Newtonsoft.Json.JsonConvert.DeserializeObject<NPC[]>(       File.ReadAllText(Path.Combine(dir, "npcs.json"))));
+                                        dias.AddRange(      Newtonsoft.Json.JsonConvert.DeserializeObject<Dialogue[]>(  File.ReadAllText(Path.Combine(dir, "dialogues.json"))));
+                                        locMaster.currLoc = locMaster.locations[0];
+                                    }
+                                    catch (FileNotFoundException ex)
+                                    {
+                                        Console.WriteLine("files not found: " + Path.Combine(dir , ".."));
+                                    }
+                                }
+                                questMaster.quests = quests.ToArray();
+                                locMaster.locations = locs.ToArray();
+                                itemMaster.allItems = items.ToArray();
+                                npcMaster.npcs = npcs.ToArray();
+                                diaMaster.dialogues = dias.ToArray();
                             }
                             break;
                         case "save":
                             if (args.Length == 3)
                             {
-                                Directory.CreateDirectory(Path.Combine(batchPathBase, "input", args[2]));
-                                File.WriteAllText(Path.Combine(batchPathBase, "input", args[2], "quests.json"), Newtonsoft.Json.JsonConvert.SerializeObject(questMaster.quests, Newtonsoft.Json.Formatting.Indented));
-                                File.WriteAllText(Path.Combine(batchPathBase, "input", args[2], "locations.json"), Newtonsoft.Json.JsonConvert.SerializeObject(locMaster.locations, Newtonsoft.Json.Formatting.Indented));
-                                File.WriteAllText(Path.Combine(batchPathBase, "input", args[2], "items.json"), Newtonsoft.Json.JsonConvert.SerializeObject(itemMaster.allItems, Newtonsoft.Json.Formatting.Indented));
-                                File.WriteAllText(Path.Combine(batchPathBase, "input", args[2], "npcs.json"), Newtonsoft.Json.JsonConvert.SerializeObject(npcMaster.npcs, Newtonsoft.Json.Formatting.Indented));
-                                File.WriteAllText(Path.Combine(batchPathBase, "input", args[2], "dialogues.json"), Newtonsoft.Json.JsonConvert.SerializeObject(diaMaster.dialogues, Newtonsoft.Json.Formatting.Indented));
+                                Directory.CreateDirectory(Path.Combine(PathBase, "output", args[2]));
+                                File.WriteAllText(Path.Combine(PathBase, "input", args[2], "quests.json"), Newtonsoft.Json.JsonConvert.SerializeObject(questMaster.quests, Newtonsoft.Json.Formatting.Indented));
+                                File.WriteAllText(Path.Combine(PathBase, "input", args[2], "locations.json"), Newtonsoft.Json.JsonConvert.SerializeObject(locMaster.locations, Newtonsoft.Json.Formatting.Indented));
+                                File.WriteAllText(Path.Combine(PathBase, "input", args[2], "items.json"), Newtonsoft.Json.JsonConvert.SerializeObject(itemMaster.allItems, Newtonsoft.Json.Formatting.Indented));
+                                File.WriteAllText(Path.Combine(PathBase, "input", args[2], "npcs.json"), Newtonsoft.Json.JsonConvert.SerializeObject(npcMaster.npcs, Newtonsoft.Json.Formatting.Indented));
+                                File.WriteAllText(Path.Combine(PathBase, "input", args[2], "dialogues.json"), Newtonsoft.Json.JsonConvert.SerializeObject(diaMaster.dialogues, Newtonsoft.Json.Formatting.Indented));
                             }
                             break;;
                         case "help":
