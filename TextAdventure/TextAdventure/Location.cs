@@ -71,19 +71,19 @@ namespace TextAdventure
         /// <param name="name">Name der neuen <see cref="Location"/></param>
         public void switchLoc(string name, bool devmode = false)
         {
-            Location loc = Array.Find(locations, l => l.name == name);
+            Location loc = (name.StartsWith("@ID_"))?Array.Find(locations, l => "@ID_" + l.ID == name) : Array.Find(locations, l => l.name == name);
             if (loc == null) loc = Array.Find(locations, l => l.alias == name);
             if (loc == null)
             {
                 Console.WriteLine("Location not avaiable: " + name);
                 return;
             }
-            if (!(currLoc.connections.Contains(loc.name) || devmode))
+            if (!(currLoc.connections.Contains("@ID_" + loc.ID) || devmode))
             {
                 Console.WriteLine("location not accesible from: " + currLoc.name);
                 return;
             }
-            int conIndex = Array.IndexOf(currLoc.connections, name);
+            int conIndex = Array.IndexOf(currLoc.connections, "@ID_" + loc.ID);
             if (conIndex == -1)
             {
                 Location alias = Array.Find(locations, l => l.alias == name);
@@ -111,7 +111,10 @@ namespace TextAdventure
                 Console.WriteLine(message);
                 return;
             }
-            if (loc.discovered == false) { discover(loc); }
+            if (loc.discovered == false)
+            {
+                discover(loc);
+            }
             onLeave(loc);
             currLoc = loc;
             Console.WriteLine("your current location: " + currLoc.name);
@@ -120,6 +123,11 @@ namespace TextAdventure
         public void changeConnectionStatus(Location loc, string name, bool status)
         {
             int index = Array.IndexOf(loc.connections, name);
+            if ( index == -1 )
+            {
+                Console.WriteLine("Connection not found");
+                return;
+            }
             loc.connectionStatus[index] = status;
         }
 
@@ -143,34 +151,37 @@ namespace TextAdventure
             {
                 name = "start",
                 alias="",
+                ID="loc_start",
                 discovered = true,
-                description ="hier beginnt unser geniales nices abenteuer durch die wundersame welt der höööhle" ,
-                connections = new string[] { "mitte" },
+                description ="hier beginnt unser geniales nices abenteuer durch die wundersame welt der hööölle" ,
+                connections = new string[] { "@ID_loc_middle" },
                 connectionStatus = new bool[] { true }
             },
             new Location {
                 name = "mitte",
                 alias="gammeltuer",
+                ID="loc_middle",
                 discovered =false,
                 description ="hier is die midde, am boden liegt unter dreck ein schluessel",
-                connections = new string[] { "start", "ende", "labor" },
-                connectionStatus = new bool[] { true, false, true },
+                connections = new string[]      { "@ID_loc_start"   , "@ID_loc_end" , "@ID_loc_lab" },
+                connectionStatus = new bool[]   { true              , false         , true          },
                 onDiscvover =
-                "dev>quest>complete>Die ersten Schritte-"+
-                "dev>quest>start>Erreiche das Ende",
-                obtainableItems = new List<string> { "schluessel" },
-                usableItems = new string[] {"schluessel","bombe"},
+                "dev>quest>complete>@ID_quest_main_01-"+
+                "dev>quest>start>@ID_quest_main_02",
+                obtainableItems = new List<string> { "@ID_item_schl_01" },
+                usableItems = new string[] { "@ID_item_schl_01", "@ID_item_bomb"},
                 denialMessage = new Dictionary<string, string>(){ { "start","test, yo!" },{"labor","is kaputt, yo!"}, { "default","[info] so war das nicht gedacht" } },
             },
             new Location
             {
                 name = "ende",
                 alias = "mysterioeser_eingang",
+                ID="loc_end",
                 discovered =false,
                 description ="du hast die welt gerettet und es gibt nichts mehr für dich zu tun außer zu sterben,yo!",
                 onDiscvover = 
-                "dev>quest>complete>Erreiche das Ende",
-                connections =new string[] { "mitte" },
+                "dev>quest>complete>@ID_quest_main_02",
+                connections =new string[] { "@ID_loc_middle" },
                 connectionStatus = new bool[] { true },
                 denialMessage = new Dictionary<string, string>() { {"mitte", "du benötigst einen schlüssel um dieses tor zu öffnen" }, { "default","[info] so war das nicht gedacht" } }
             },
@@ -178,24 +189,26 @@ namespace TextAdventure
             {
                 name = "labor",
                 alias = "flackernder_flur",
+                ID="loc_lab",
                 discovered =false,
                 description ="Krasse sachen sind hier",
-                connections =new string[] { "mitte","hoehle" },
-                connectionStatus = new bool[] { true,true },
-                onDiscvover = 
-                "dev>quest>start>bastle was, das wummst!-"+
-                "dev>location>close_connection>labor>mitte-"+
-                "dev>location>close_connection>mitte>labor",
-                obtainableItems = new List<string> { "bausatz_1", "bausatz_2" },
-                usableItems =new string[] { "bombe"}
+                connections =new string[]       { "@ID_loc_middle"  ,"@ID_loc_cave" },
+                connectionStatus = new bool[]   { true              ,false          },
+                onDiscvover =
+                "dev>quest>start>@ID_quest_main_03-"+
+                "dev>location>close_connection>@ID_loc_lab>@ID_loc_middle-"+
+                "dev>location>close_connection>@ID_loc_middle>@ID_loc_lab",
+                obtainableItems = new List<string> { "@ID_item_craft_01", "@ID_item_craft_02" },
+                usableItems =new string[] { "@ID_item_bomb"}
             },
             new Location
             {
                 name = "hoehle" ,
                 alias = "sprengloch",
+                ID="loc_cave",
                 discovered =true,
                 description ="mit glück vlt ein umweg",
-                connections =new string[] { "ende" },
+                connections =new string[] { "@ID_loc_end" },
                 connectionStatus = new bool[] { true },
                // obtainableItems = new List<string> {"schwansen_modell"},
             }
@@ -218,5 +231,6 @@ namespace TextAdventure
         public List<string> obtainableItems { get; set; }
         public string[] usableItems { get; set; }
         public Dictionary<string,string> denialMessage { get; set; }
+        public string ID { get; set; }
     }
 }

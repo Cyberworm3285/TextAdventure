@@ -30,7 +30,7 @@ namespace TextAdventure
 
         public void talkTo(string name)
         {
-            NPC npc = Array.Find(npcs, n => n.name == name || n.alias == name);
+            NPC npc = (name.StartsWith("@ID_"))?Array.Find(npcs, n => "@ID_" + n.ID == name) : Array.Find(npcs, n => n.name == name || n.alias == name);
             if (npc == null)
             {
                 Console.WriteLine("could not find NPC*: " + name);
@@ -47,8 +47,8 @@ namespace TextAdventure
                 Console.WriteLine("new bekanntschaft: " + npc.name + ((npc.alias!=null)?" '"+npc.alias+"'":""));
             }
             currNPC = npc;
-            Dialogue dia = Array.Find(diaMaster.dialogues, n => n.name == npc.initialDialogue);
-            diaMaster.startDialogue(dia.name);
+            Dialogue dia = Array.Find(diaMaster.dialogues, n => "@ID_" + n.ID == npc.initialDialogue);
+            diaMaster.startDialogue(dia.ID);
             main.fetchCommands(npc.onDialogue);
         }
 
@@ -57,10 +57,11 @@ namespace TextAdventure
             new NPC
             {
                 name = "david",
+                ID = "npc_01",
                 alias = "stinkender penner",
                 known = false,
                 currLoc = "hoehle",
-                initialDialogue = "david_01",
+                initialDialogue = "@ID_dia_david_01",
             },
         };
 
@@ -75,5 +76,6 @@ namespace TextAdventure
         public string initialDialogue { get; set; }
         public string currDialogue { get; set; }
         public string onDialogue { get; set; }
+        public string ID { get; set; }
     }
 }

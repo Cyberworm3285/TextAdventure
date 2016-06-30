@@ -31,7 +31,7 @@ namespace TextAdventure
 
         public void startDialogue(string name)
         {
-            Dialogue dia = Array.Find(dialogues, d => d.name == name);
+            Dialogue dia = Array.Find(dialogues, d => d.ID == name);
             if (dia == null)
             {
                 Console.WriteLine("could not find dialogue: " + name);
@@ -56,7 +56,7 @@ namespace TextAdventure
                     continue;
                 }
                 Dialogue oldDialogue = currDialogue;
-                currDialogue = Array.Find(dialogues, d => d.name == currDialogue.nextDialogue[next - 1]);
+                currDialogue = Array.Find(dialogues, d => "@ID_" + d.ID == currDialogue.nextDialogue[next - 1]);
                 if (currDialogue == null) break;
                 if (currDialogue.requiredForDialogue != null)
                 {
@@ -79,65 +79,65 @@ namespace TextAdventure
         {
             new Dialogue
             {
-                name="david_01",
+                ID="dia_david_01",
                 NPC_part = "ey ich hab en kleinen schwansen. willste mal sehen?",
                 answers = new string[] { "ja", "ne, fick dich", "stiiiiirb" },
-                nextDialogue=new string[] { "david_02", "david_03" , "david_04"},
+                nextDialogue=new string[] { "@ID_dia_david_02", "@ID_dia_david_03", "@ID_dia_david_04"},
             },
             new Dialogue
             {
-                name="david_02",
+                ID="dia_david_02",
                 NPC_part = "ja hier, bidde!",
                 answers = new string[] { "ja, dangge!" },
                 nextDialogue = new string[] {null},
                 onDialogue =
                 "dev>item>give>schwansen_modell-"+
-                "dev>npc>change>initial_dialogue>david>david_03",
+                "dev>npc>change>initial_dialogue>david>@ID_dia_david_03",
             },
             new Dialogue
             {
-                name = "david_03",
+                ID = "dia_david_03",
                 NPC_part = "ich hasse dich jetz",
                 answers = new string[] { "ok", "stiiiiirb", "dicks dem, dem dicks gebuehret" },
-                nextDialogue = new string[] { null, "david_04", "david_05" },
+                nextDialogue = new string[] { null, "@ID_dia_david_04", "@ID_dia_david_05" },
                 onDialogue =
-                "dev>npc>change>initial_dialogue>david>david_03",
+                "dev>npc>change>initial_dialogue>david>@ID_dia_david_03",
             },
             new Dialogue
             {
-                name = "david_04",
+                ID = "dia_david_04",
                 NPC_part = "nooooin",
                 answers = new string[] { "huehuehue" },
                 nextDialogue = new string[] { null },
                 onDialogue =
-                "dev>npc>kill>david-"+
-                "dev>item>give>schwansen_modell",
+                "dev>npc>kill>@ID_npc_01-"+
+                "dev>item>give>@ID_item_trophy_01"
             },
             new Dialogue
             {
-                name = "david_05",
+                ID = "dia_david_05",
                 NPC_part = "fraesh",
                 answers = new string[] { "kein ding fuern king" },
-                nextDialogue = new string[] { "david_06" },
+                nextDialogue = new string[] { "@ID_dia_david_06" },
                 requiredForDialogue = "schwansen_modell",
                 denialMessage = "du brauchst das schwansen_modell um mich wieder zu beruhigen",
                 onDialogue =
-                "dev>npc>change>initial_dialogue>david>david_06-"+
+                "dev>npc>change>initial_dialogue>david>@ID_dia_david_06-"+
                 "dev>item>remove>schwansen_modell",
             },
             new Dialogue
             {
-                name = "david_06",
+                ID = "dia_david_06",
                 NPC_part = "ich bin zufrieden :)",
                 answers = new string[] { "ja nice!", "stiiiiirb" },
-                nextDialogue = new string[] { null, "david_04" },
+                nextDialogue = new string[] { null, "@ID_dia_dia_david_04" },
             },
         };
     }
 
     public class Dialogue
     {
-        public string name { get; set; }
+        public string ID { get; set; }
         public string NPC_part { get; set; }
         public string onDialogue { get; set; }
         public string requiredForDialogue { get; set; }
