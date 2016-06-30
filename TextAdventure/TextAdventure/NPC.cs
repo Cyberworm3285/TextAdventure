@@ -36,7 +36,7 @@ namespace TextAdventure
                 Console.WriteLine("could not find NPC*: " + name);
                 return;
             }
-            if (npc.currLoc != locMaster.currLoc.name)
+            if (npc.currLoc != "@ID_" + locMaster.currLoc.ID)
             {
                 Console.WriteLine("could not find NPC: " + name);
                 return;
@@ -60,7 +60,7 @@ namespace TextAdventure
                 ID = "npc_01",
                 alias = "stinkender penner",
                 known = false,
-                currLoc = "hoehle",
+                currLoc = "@ID_loc_cave",
                 initialDialogue = "@ID_dia_david_01",
             },
         };

@@ -302,7 +302,7 @@ namespace TextAdventure
                             }
                         }
                     }
-                    NPC[] npcs = Array.FindAll(npcMaster.npcs, n => n.currLoc == locMaster.currLoc.name);
+                    NPC[] npcs = Array.FindAll(npcMaster.npcs, n => n.currLoc == "@ID_" + locMaster.currLoc.ID);
                     if (npcs.Length != 0)
                     {
                         Console.WriteLine("NPCs:");

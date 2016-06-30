@@ -154,8 +154,8 @@ namespace TextAdventure
                 ID="loc_start",
                 discovered = true,
                 description ="hier beginnt unser geniales nices abenteuer durch die wundersame welt der hööölle" ,
-                connections = new string[] { "@ID_loc_middle" },
-                connectionStatus = new bool[] { true }
+                connections = new string[]      { "@ID_loc_middle" },
+                connectionStatus = new bool[]   { true }
             },
             new Location {
                 name = "mitte",
@@ -181,8 +181,8 @@ namespace TextAdventure
                 description ="du hast die welt gerettet und es gibt nichts mehr für dich zu tun außer zu sterben,yo!",
                 onDiscvover = 
                 "dev>quest>complete>@ID_quest_main_02",
-                connections =new string[] { "@ID_loc_middle" },
-                connectionStatus = new bool[] { true },
+                connections =new string[]       { "@ID_loc_middle" },
+                connectionStatus = new bool[]   { true },
                 denialMessage = new Dictionary<string, string>() { {"mitte", "du benötigst einen schlüssel um dieses tor zu öffnen" }, { "default","[info] so war das nicht gedacht" } }
             },
             new Location
@@ -203,13 +203,13 @@ namespace TextAdventure
             },
             new Location
             {
-                name = "hoehle" ,
+                name = "hoehlenficker" ,
                 alias = "sprengloch",
                 ID="loc_cave",
                 discovered =true,
                 description ="mit glück vlt ein umweg",
-                connections =new string[] { "@ID_loc_end" },
-                connectionStatus = new bool[] { true },
+                connections =new string[]       { "@ID_loc_end" },
+                connectionStatus = new bool[]   { true },
                // obtainableItems = new List<string> {"schwansen_modell"},
             }
         };
