@@ -98,7 +98,8 @@ namespace TextAdventure
             }
             foreach (Item i in item)
             {
-                if (i.usableAt == "@ID_" + locMaster.currLoc.ID)
+                if (i == null) break;
+                if ((i.usableAt == "@ID_" + locMaster.currLoc.ID) || (i.usableAt == ""))
                 {
                     main.fetchCommands(i.onUsage, false, false);
                 }
@@ -252,6 +253,27 @@ namespace TextAdventure
                 onPickUp=
                 "dev>quest>start>@ID_quest_side_01",
                 visible = true,
+            },
+            new Item
+            {
+                name="ne tüte",
+                ID = "item_drugs_weed_01",
+                description="eine fachmaennisch gedrehte tüte weed",
+                onUsage = 
+                "dev>echo>hmmmmm gutes zeug-"+
+                "dev>item>remove>@ID_item_drugs_weed_01",
+                usableAt = "",
+            },
+            new Item
+            {
+                name = "tims handtuch",
+                ID = "item_fap_01",
+                description = "ein handtuch, wo jizzl drin hängt",
+                visible = true,
+                pickupCount = -1,
+                usableAt = "",
+                onUsage = 
+                "",
             }
         };
     }

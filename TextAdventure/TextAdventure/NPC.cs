@@ -63,6 +63,24 @@ namespace TextAdventure
                 currLoc = "@ID_loc_cave",
                 initialDialogue = "@ID_dia_david_01",
             },
+            new NPC
+            {
+                name = "kiffer",
+                ID = "npc_02",
+                alias ="",
+                known=true,
+                currLoc = "@ID_loc_end",
+                initialDialogue = "@ID_dia_kiffer_01"
+            },
+            new NPC
+            {
+                name = "tim",
+                ID = "npc_03",
+                alias="psycho ficker",
+                known = false,
+                currLoc = "@ID_loc_porn",
+                initialDialogue = "@ID_dia_tim_01",
+            }
         };
 
         public List<NPC> graveyard = new List<NPC>();

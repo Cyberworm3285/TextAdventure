@@ -54,14 +54,14 @@
     </dependentAssembly>
   </dependency>
   <dependency>
-    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="TextAdventure.exe" size="50624">
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="TextAdventure.exe" size="53696">
       <assemblyIdentity name="TextAdventure" version="1.0.0.0" language="neutral" processorArchitecture="msil" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>xmNGbf58KS0IiClsYAhDZ4yLYm992j2N7ld+GGaxTec=</dsig:DigestValue>
+        <dsig:DigestValue>aR3btyqg2uPd8m8OMONRFWqu0USXXTYGhjSEz9X7Eo8=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>

@@ -60,7 +60,7 @@ namespace TextAdventure
                 if (currDialogue == null) break;
                 if (currDialogue.requiredForDialogue != null)
                 {
-                    if (!itemMaster.inventory.Contains(Array.Find(itemMaster.allItems, i => i.name == currDialogue.requiredForDialogue)))
+                    if (!itemMaster.inventory.Contains(Array.Find(itemMaster.allItems, i => "@ID_" + i.ID == currDialogue.requiredForDialogue)))
                     {
                         Console.WriteLine(npcMaster.currNPC.name + ": " + currDialogue.denialMessage);
                         currDialogue = oldDialogue;
@@ -132,6 +132,52 @@ namespace TextAdventure
                 answers = new string[] { "ja nice!", "stiiiiirb" },
                 nextDialogue = new string[] { null, "@ID_dia_dia_david_04" },
             },
+            new Dialogue
+            {
+                ID = "dia_kiffer_01",
+                NPC_part = "hm.... hmm",
+                answers = new string[] { ".." },
+                nextDialogue = new string[] { null },
+                onDialogue =
+                "dev>item>give>@ID_item_drugs_weed_01",
+            },
+            new Dialogue
+            {
+                ID = "dia_tim_01",
+                NPC_part = "gib mir halt mein wichstuch!",
+                answers = new string[] { "ok bidde", "stiiirb" },
+                nextDialogue = new string [] { "@ID_dia_tim_02","@ID_dia_tim_03"},
+            },
+            new Dialogue
+            {
+                ID = "dia_tim_02",
+                NPC_part = "dangge",
+                answers = new string[] { "kein ding, yo!" },
+                nextDialogue = new string[] { null },
+                requiredForDialogue = "@ID_item_fap_01",
+                onDialogue =
+                "dev>location>open_connection>@ID_loc_cave>@ID_loc_porn-"+
+                "dev>location>open_connection>@ID_loc_porn>@ID_loc_cave-"+
+                "dev>npc>change>initial_dialogue>tim>@ID_dia_tim_04"
+            },
+            new Dialogue
+            {
+                ID = "dia_tim_03",
+                NPC_part = "noooooin",
+                answers = new string[] {"fick nicht mit dem ficker"},
+                nextDialogue = new string[] {null},
+                onDialogue = 
+                "dev>npc>kill>@ID_npc_03-"+
+                "dev>location>open_connection>@ID_loc_cave>@ID_loc_porn-"+
+                "dev>location>open_connection>@ID_loc_porn>@ID_loc_cave"
+            },
+            new Dialogue
+            {
+                ID= "dia_tim_04",
+                NPC_part = "*fap* *fap*",
+                answers = new string[] {"lol"},
+                nextDialogue = new string[] {null}
+            }
         };
     }
 

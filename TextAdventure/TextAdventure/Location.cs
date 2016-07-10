@@ -86,8 +86,14 @@ namespace TextAdventure
             int conIndex = Array.IndexOf(currLoc.connections, "@ID_" + loc.ID);
             if (conIndex == -1)
             {
-                Location alias = Array.Find(locations, l => l.alias == name);
-                conIndex = Array.IndexOf(currLoc.connections, alias.name);
+                Location alias = Array.Find(locations, l => l.alias == name || l.name == name);
+                conIndex = Array.IndexOf(currLoc.connections, "@ID_" + alias.ID);
+            }
+            if ((conIndex == -1) && (devmode))
+            {
+                currLoc = loc;
+                Console.WriteLine("your current location: " + currLoc.name);
+                return;
             }
             if ((!currLoc.connectionStatus[conIndex]) && (!devmode))
             {
@@ -208,9 +214,24 @@ namespace TextAdventure
                 ID="loc_cave",
                 discovered =true,
                 description ="mit glück vlt ein umweg",
-                connections =new string[]       { "@ID_loc_end" },
-                connectionStatus = new bool[]   { true },
+                connections =new string[]       { "@ID_loc_end", "@ID_loc_porn" },
+                connectionStatus = new bool[]   { true, true },
                // obtainableItems = new List<string> {"schwansen_modell"},
+            },
+            new Location
+            {
+                name = "pornokeller",
+                alias = "ominöser raum",
+                ID = "loc_porn",
+                discovered = false,
+                description = "wie bei fifty shades of grey, nur mit mehr fick und fuck",
+                connections = new string[] { "@ID_loc_cave" },
+                connectionStatus = new bool[] {true},
+                obtainableItems = new List<string> { "@ID_item_fap_01"},
+                onDiscvover = 
+                "dev>echo>hier stinkts nach schwansen!-"+
+                "dev>location>close_connection>@ID_loc_cave>@ID_loc_porn-"+
+                "dev>location>close_connection>@ID_loc_porn>@ID_loc_cave"
             }
         };
     }

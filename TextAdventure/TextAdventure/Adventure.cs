@@ -292,7 +292,7 @@ namespace TextAdventure
                     }
                     if (locMaster.currLoc.obtainableItems != null)
                     {
-                        Item[] items = Array.FindAll(itemMaster.allItems, i => locMaster.currLoc.obtainableItems.Contains(i.name) && i.visible);
+                        Item[] items = Array.FindAll(itemMaster.allItems, i => locMaster.currLoc.obtainableItems.Contains("@ID_" + i.ID) && i.visible);
                         if (items.Length != 0)
                         {
                             Console.WriteLine("Gegenstände:");
@@ -757,7 +757,7 @@ namespace TextAdventure
                         case "save":
                             if (args.Length == 3)
                             {
-                                Directory.CreateDirectory(Path.Combine(PathBase, "output", args[2]));
+                                Directory.CreateDirectory(Path.Combine(PathBase, "input", args[2]));
                                 File.WriteAllText(Path.Combine(PathBase, "input", args[2], "quests.json"), Newtonsoft.Json.JsonConvert.SerializeObject(questMaster.quests, Newtonsoft.Json.Formatting.Indented));
                                 File.WriteAllText(Path.Combine(PathBase, "input", args[2], "locations.json"), Newtonsoft.Json.JsonConvert.SerializeObject(locMaster.locations, Newtonsoft.Json.Formatting.Indented));
                                 File.WriteAllText(Path.Combine(PathBase, "input", args[2], "items.json"), Newtonsoft.Json.JsonConvert.SerializeObject(itemMaster.allItems, Newtonsoft.Json.Formatting.Indented));
