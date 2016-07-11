@@ -820,7 +820,7 @@ namespace TextAdventure
                             npc = Array.Find(npcMaster.npcs, n => n.name == args[2]) ?? Array.Find(npcMaster.npcs, n => "@ID_" + n.ID == args[2]);
                             if (npc == null)
                             {
-                                Console.WriteLine("npc not found: " + args[3]);
+                                Console.WriteLine("npc not found: " + args[2]);
                                 return;
                             }
                             List<NPC> tempList = npcMaster.npcs.ToList<NPC>();
@@ -828,6 +828,19 @@ namespace TextAdventure
                             npcMaster.graveyard.Add(npc);
                             npcMaster.npcs = tempList.ToArray();
                             Console.WriteLine("killed: " + npc.name);
+                            break;
+                        case "resurrect":
+                            npc = npcMaster.graveyard.Find(n => n.name == args[2]) ?? npcMaster.graveyard.Find(n => "@ID_" + n.ID == args[2]);
+                            if (npc == null)
+                            {
+                                Console.WriteLine("npc not found: " + args[2]);
+                                return;
+                            }
+                            List < NPC > bla = npcMaster.npcs.ToList();
+                            bla.Add(npc);
+                            npcMaster.npcs = bla.ToArray();
+                            npcMaster.graveyard.Remove(npc);
+                            Console.WriteLine("npc resurrected: " + args[2]); 
                             break;
                         case "help":
                             Console.WriteLine("avaiable parameters: change+x, kill+1");
