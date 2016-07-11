@@ -34,6 +34,16 @@ namespace TextAdventure
         public ItemMaster(AdventureGUI owner)
         {
             main = owner;
+            initialiseDict();
+        }
+
+        public void initialiseDict()
+        {
+            itemDict.Clear();
+            foreach (Item i in allItems)
+            {
+                itemDict.Add("@ID_" + i.ID, i.name);
+            }
         }
 
         /// <summary>
@@ -55,7 +65,7 @@ namespace TextAdventure
         /// <param name="name">Das <see cref="Item"/></param>
         public void lookat(string name)
         {
-            Item item = Array.Find(allItems, i => i.name == name);
+            Item item = (name.StartsWith("@ID_"))?inventory.Find(i => "@ID_" + i.ID == name) : inventory.Find(i => i.name == name);
             if (item != null)
             {
                 Console.WriteLine(item.description);
@@ -70,21 +80,33 @@ namespace TextAdventure
         ///     Benutzt das angegebene <see cref="Item"/> im Inventar
         /// </summary>
         /// <param name="name">Das <see cref="Item"/></param>
-        public void useItem(string name)
+        public void useItem(string name, bool useAllItems = false)
         {
-            Item item = inventory.Find(i => i.name == name);
-            if (item == null)
+            Item[] item;
+            if (useAllItems)
+            {
+                item = (name.StartsWith("@ID_")) ? inventory.FindAll(i => "@ID_" + i.ID == name).ToArray() : inventory.FindAll(i => i.name == name).ToArray();
+            }
+            else
+            {
+                item = (name.StartsWith("@ID_")) ? new Item[] { inventory.Find(i => "@ID_" + i.ID == name) } : new Item[] { inventory.Find(i => i.name == name) };
+            }
+            if (item.Length == 0)
             {
                 Console.WriteLine("could not find item: " + name);
                 return;
             }
-            if (item.usableAt == locMaster.currLoc.name)
+            foreach (Item i in item)
             {
-                main.fetchCommands(item.onUsage, false, false);
-            }
-            else
-            {
-                Console.WriteLine("you cannot use that item here: " + item.name);
+                if (i == null) break;
+                if ((i.usableAt == "@ID_" + locMaster.currLoc.ID) || (i.usableAt == ""))
+                {
+                    main.fetchCommands(i.onUsage, false, false);
+                }
+                else
+                {
+                    Console.WriteLine("you cannot use that item here: " + i.name);
+                }
             }
         }
 
@@ -95,7 +117,23 @@ namespace TextAdventure
         public void takeItem(string name)
         {
             if (locMaster.currLoc.obtainableItems == null) return;
-            int index = locMaster.currLoc.obtainableItems.IndexOf(name);
+            int index;
+            if (name.StartsWith("@ID_"))
+            {
+                string convertedID;
+                itemDict.TryGetValue(name, out convertedID);
+                index = locMaster.currLoc.obtainableItems.IndexOf(convertedID);
+            }
+            else
+            {
+                Item[] allObtainableItems = new Item[locMaster.currLoc.obtainableItems.Count];
+                int counter = 0;
+                foreach (string s in locMaster.currLoc.obtainableItems)
+                {
+                    allObtainableItems[counter++] = Array.Find(allItems, i => "@ID_" + i.ID == s); 
+                }
+                index = Array.IndexOf(allObtainableItems, Array.Find(allObtainableItems, i => i.name == name));
+            }
             if (index != -1)
             {
                 Item newItem = Array.Find(allItems, i => i.name == name);
@@ -122,9 +160,9 @@ namespace TextAdventure
         public bool combineItems(string name1, string name2)
         {
             Item item1, item2;
-            item1 = inventory.Find(i => i.name == name1);
-            item2 = inventory.Find(i => i.name == name2);
-            if((item1 == null) || (item2 == null))
+            item1 = (name1.StartsWith("@ID_")) ? inventory.Find(i => "@ID_" + i.ID == name1) : inventory.Find(i => i.name == name1);
+            item2 = (name2.StartsWith("@ID_")) ? inventory.Find(i => "@ID_" + i.ID == name2) : inventory.Find(i => i.name == name2);
+            if ((item1 == null) || (item2 == null))
             {
                 Console.WriteLine("diese items sind nicht kompatibel!");
                 return false;
@@ -134,9 +172,9 @@ namespace TextAdventure
                 Console.WriteLine("diese items sind nicht kompatibel!");
                 return false;
             }
-            if (item1.combinabelWith == name2)
+            if (item1.combinabelWith == "@ID_" + item2.ID)
             {
-                Item newItem = Array.Find(allItems, i => i.name == item1.combinableTo);
+                Item newItem = Array.Find(allItems, i => "@ID_" + i.ID == item1.combinableTo);
                 main.fetchCommands(newItem.onPickUp, false, false);
                 inventory.Add(newItem);
                 inventory.Remove(item1);
@@ -149,7 +187,9 @@ namespace TextAdventure
                 Console.WriteLine("diese items sind nicht kompatibel!");
                 return false;
             }
-        }    
+        }
+
+        Dictionary<string, string> itemDict = new Dictionary<string, string>();
 
         /// <summary>
         ///     <see cref="Array"/> aller <see cref="Item"/>s
@@ -159,54 +199,81 @@ namespace TextAdventure
             new Item
             {
                 name ="schluessel",
+                ID = "item_schl_01",
                 description ="dieser schlüssel öffnet das tor zu 'ende'",
-                usableAt ="mitte",
+                usableAt ="@ID_loc_middle",
                 onUsage = 
-                "dev>location>open_connection>mitte>ende",
+                "dev>location>open_connection>@ID_loc_middle>@ID_loc_end",
                 pickupCount =1,
                 visible = false
             },
             new Item
             {
                 name ="'du hast das spiel durchgespielt' trophäe",
+                ID = "item_trophy_01",
                 description ="du hast sämtliche hürden überwunden und das abenteuer durchgespielt",
             },
             new Item
             {
                 name ="bausatz_1",
+                ID = "item_craft_01",
                 description ="ähnelt bausatz 2",
                 pickupCount =1,
-                combinabelWith ="bausatz_2",
-                combinableTo ="bombe",
+                combinabelWith ="@ID_item_craft_02",
+                combinableTo ="@ID_item_bomb",
                 visible = true
             },
             new Item
             {
                 name ="bausatz_2",
+                ID = "item_craft_02",
                 description ="ähnelt bausatz 1",
                 pickupCount =1,
-                combinabelWith ="bausatz_1",
-                combinableTo ="bombe",
+                combinabelWith ="@ID_item_craft_02",
+                combinableTo ="@ID_item_bomb",
                 visible = true,
             },
             new Item
             {
                 name ="bombe",
+                ID = "item_bomb",
                 description ="kann kaputt machen",
-                usableAt ="labor",
+                usableAt ="@ID_loc_lab",
                 onUsage =
-                "dev>location>open_connection>mitte>ende",
+                "dev>location>open_connection>@ID_loc_lab>@ID_loc_cave",
                 onPickUp =
-                "dev>quest>complete>bastle was, das wummst!"
+                "dev>quest>complete>@ID_quest_main_03"
             },
             new Item
             {
                 name="schwansen_modell",
+                ID = "item_trophy_02",
                 description="ein ca 3mm langes modell von davids schwansen (1000x vergrößerung)",
                 pickupCount=-1,
                 onPickUp=
-                "dev>quest>start>david in den arsch treten",
+                "dev>quest>start>@ID_quest_side_01",
                 visible = true,
+            },
+            new Item
+            {
+                name="ne tüte",
+                ID = "item_drugs_weed_01",
+                description="eine fachmaennisch gedrehte tüte weed",
+                onUsage = 
+                "dev>echo>hmmmmm gutes zeug-"+
+                "dev>item>remove>@ID_item_drugs_weed_01",
+                usableAt = "",
+            },
+            new Item
+            {
+                name = "tims handtuch",
+                ID = "item_fap_01",
+                description = "ein handtuch, wo jizzl drin hängt",
+                visible = true,
+                pickupCount = -1,
+                usableAt = "",
+                onUsage = 
+                "",
             }
         };
     }
@@ -225,5 +292,6 @@ namespace TextAdventure
         public int pickupCount { get; set; } = -1;
         public string onPickUp { get; set; }
         public bool visible { get; set; }
-}
+        public string ID { get; set; }
+    }
 }

@@ -30,13 +30,13 @@ namespace TextAdventure
 
         public void talkTo(string name)
         {
-            NPC npc = Array.Find(npcs, n => n.name == name || n.alias == name);
+            NPC npc = (name.StartsWith("@ID_"))?Array.Find(npcs, n => "@ID_" + n.ID == name) : Array.Find(npcs, n => n.name == name || n.alias == name);
             if (npc == null)
             {
                 Console.WriteLine("could not find NPC*: " + name);
                 return;
             }
-            if (npc.currLoc != locMaster.currLoc.name)
+            if (npc.currLoc != "@ID_" + locMaster.currLoc.ID)
             {
                 Console.WriteLine("could not find NPC: " + name);
                 return;
@@ -47,8 +47,8 @@ namespace TextAdventure
                 Console.WriteLine("new bekanntschaft: " + npc.name + ((npc.alias!=null)?" '"+npc.alias+"'":""));
             }
             currNPC = npc;
-            Dialogue dia = Array.Find(diaMaster.dialogues, n => n.name == npc.initialDialogue);
-            diaMaster.startDialogue(dia.name);
+            Dialogue dia = Array.Find(diaMaster.dialogues, n => "@ID_" + n.ID == npc.initialDialogue);
+            diaMaster.startDialogue(dia.ID);
             main.fetchCommands(npc.onDialogue);
         }
 
@@ -57,11 +57,30 @@ namespace TextAdventure
             new NPC
             {
                 name = "david",
+                ID = "npc_01",
                 alias = "stinkender penner",
                 known = false,
-                currLoc = "hoehle",
-                initialDialogue = "david_01",
+                currLoc = "@ID_loc_cave",
+                initialDialogue = "@ID_dia_david_01",
             },
+            new NPC
+            {
+                name = "kiffer",
+                ID = "npc_02",
+                alias ="",
+                known=true,
+                currLoc = "@ID_loc_end",
+                initialDialogue = "@ID_dia_kiffer_01"
+            },
+            new NPC
+            {
+                name = "tim",
+                ID = "npc_03",
+                alias="psycho ficker",
+                known = false,
+                currLoc = "@ID_loc_porn",
+                initialDialogue = "@ID_dia_tim_01",
+            }
         };
 
         public List<NPC> graveyard = new List<NPC>();
@@ -75,5 +94,6 @@ namespace TextAdventure
         public string initialDialogue { get; set; }
         public string currDialogue { get; set; }
         public string onDialogue { get; set; }
+        public string ID { get; set; }
     }
 }

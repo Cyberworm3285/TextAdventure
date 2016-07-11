@@ -78,7 +78,7 @@ namespace TextAdventure
         /// <param name="name">Name der <see cref="Quest"/></param>
         public void completeQuest(string name)
         {
-            Quest quest = Array.Find(quests, q => q.name == name);
+            Quest quest = (name.StartsWith("@ID_")) ? Array.Find(quests, q => "@ID_" + q.ID == name) : Array.Find(quests, q => q.name == name);
             if (!quest.active)
             {
                 return;
@@ -95,7 +95,7 @@ namespace TextAdventure
         /// <param name="name">Name <see cref="Quest"/></param>
         public void startQuest(string name)
         {
-            Quest quest = Array.Find(quests, q => q.name == name);
+            Quest quest = (name.StartsWith("@ID_")) ? Array.Find(quests, q => "@ID_" + q.ID == name) : Array.Find(quests, q => q.name == name);
             if (quest.active)
             {
                 Console.WriteLine("quest already active: " + quest.name);
@@ -114,6 +114,7 @@ namespace TextAdventure
             new Quest
             {
                 name ="Die ersten Schritte",
+                ID = "quest_main_01",
                 finished =false,
                 active = true,
                 description = "gehe zur mitte um weiterzukommen",
@@ -123,32 +124,36 @@ namespace TextAdventure
             new Quest
             {
                 name ="Erreiche das Ende",
+                ID = "quest_main_02",
                 finished =false,
                 active = false,
                 description = "finde deinen Weg zum Ende",
                 onFinish = 
-                "dev>item>give>'du hast das spiel durchgespielt' trophäe-"+
+                "dev>item>give>@ID_item_trophy_01-"+
                 "dev>echo>glühstrumpf, das testspiel ist durch!-"+
-                "dev>quest>start>to be continued?"
+                "dev>quest>start>@ID_quest_main_03"
             },
             new Quest
             {
                 name ="bastle was, das wummst!",
+                ID = "quest_main_03",
                 onStart = 
                 "dev>echo>die tür ist eingestürzt, such einen anderen weg ans Ziel-"+
-                "dev>location>close>mitte;start",
+                "dev>location>close>@ID_loc_middle;@ID_loc_start",
                 onFinish = 
-                "dev>item>give>bombe",
+                "dev>item>give>@ID_item_bomb",
                 finished =false, active=false,
                 description ="finde und bastle!",
             },
             new Quest
             {
-                name="to be continued ..?"
+                name="to be continued ..?",
+                ID = "quest_main_04",
             },
             new Quest
             {
-                name="david in den arsch treten"
+                name="david in den arsch treten",
+                ID = "quest_side_01",
             }
         };
         private Quest[] backupQuests;
@@ -165,5 +170,6 @@ namespace TextAdventure
         public string description { get; set; }
         public string onFinish { get; set; }
         public string onStart { get; set; }
+        public string ID { get; set; }
     }
 }

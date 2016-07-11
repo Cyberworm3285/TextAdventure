@@ -287,12 +287,12 @@ namespace TextAdventure
                     Console.WriteLine("location Connections:");
                     foreach (string s in locMaster.currLoc.connections)
                     {
-                        Location loc = Array.Find(locMaster.locations, l => l.name == s);
+                        Location loc = Array.Find(locMaster.locations, l => "@ID_" + l.ID == s);
                         Console.WriteLine("    " + ((loc.discovered)?loc.name:loc.alias));
                     }
                     if (locMaster.currLoc.obtainableItems != null)
                     {
-                        Item[] items = Array.FindAll(itemMaster.allItems, i => locMaster.currLoc.obtainableItems.Contains(i.name) && i.visible);
+                        Item[] items = Array.FindAll(itemMaster.allItems, i => locMaster.currLoc.obtainableItems.Contains("@ID_" + i.ID) && i.visible);
                         if (items.Length != 0)
                         {
                             Console.WriteLine("Gegenstände:");
@@ -302,7 +302,7 @@ namespace TextAdventure
                             }
                         }
                     }
-                    NPC[] npcs = Array.FindAll(npcMaster.npcs, n => n.currLoc == locMaster.currLoc.name);
+                    NPC[] npcs = Array.FindAll(npcMaster.npcs, n => n.currLoc == "@ID_" + locMaster.currLoc.ID);
                     if (npcs.Length != 0)
                     {
                         Console.WriteLine("NPCs:");
@@ -373,12 +373,18 @@ namespace TextAdventure
                     break;
                 case "location":
                     Location loc = null;
-                    if(args.Length >= 3) loc = Array.Find(locMaster.locations, l => l.name == args[2]);
+                    if (args.Length >= 3)
+                    {
+                        if (args[2].StartsWith("@ID_"))
+                            loc = Array.Find(locMaster.locations, l => "@ID_" + l.ID == args[2]);
+                        else
+                            loc = Array.Find(locMaster.locations, l => l.name == args[2]);
+                    }
                     switch (args[1])
                     {
                         case "close_connection":
-                            Console.WriteLine(((loc == null) ? "kein gültiger parameter für 'close_connections': " : "connection closed: ") + args[2]);
-                            if ((loc != null) && (args.Length == 4))
+                            Console.WriteLine(((loc == null) ? "kein gültiger parameter für 'close_connections': " : "connection closed: ") + args[2] + ">" + args[3]);
+                            if ((loc != null) && (args.Length >= 4))
                             {
                                 locMaster.changeConnectionStatus(loc, args[3], false);
                             }
@@ -447,34 +453,41 @@ namespace TextAdventure
                     }
                     break;
                 case "item":
-                    Item item = Array.Find(itemMaster.allItems, i => i.name == args[2]);
+                    Item[] item;
+                    if (args[2].StartsWith("@ID_"))
+                        item = Array.FindAll(itemMaster.allItems, i => "@ID_" + i.ID == args[2]);
+                    else
+                        item = new Item[] { Array.Find(itemMaster.allItems, i => i.name == args[2]) };
                     switch (args[1])
                     {
                         case "give":
                             Console.WriteLine(((item == null) ? "kein gültiger parameter für 'item give': " : "obtained item: ") + args[2]);
                             if (item != null)
                             {
-                                itemMaster.inventory.Add(item);
+                                itemMaster.inventory.AddRange(item);
                             }
                             break;
                         case "remove":
                             Console.WriteLine(((item == null) ? "kein gültiger parameter für 'item give': " : "removed item: ") + args[2]);
                             if (item != null)
                             {
-                                itemMaster.inventory.Remove(item);
+                                foreach (Item it in item)
+                                {
+                                    itemMaster.inventory.Remove(it);
+                                }
                             }
                             break;
                         case "get_info":
                             if (item != null)
                             {
-                                Console.WriteLine("name: " + item.name);
-                                Console.WriteLine("description: " + item.description);
-                                Console.WriteLine("combinable with: " + item.combinabelWith);
-                                Console.WriteLine("combinable to: " + item.combinableTo);
-                                Console.WriteLine("pickupCount: " + item.pickupCount);
-                                Console.WriteLine("usableAt: " + item.usableAt);
+                                Console.WriteLine("name: " +            item[0].name);
+                                Console.WriteLine("description: " +     item[0].description);
+                                Console.WriteLine("combinable with: " + item[0].combinabelWith);
+                                Console.WriteLine("combinable to: " +   item[0].combinableTo);
+                                Console.WriteLine("pickupCount: " +     item[0].pickupCount);
+                                Console.WriteLine("usableAt: " +        item[0].usableAt);
                                 Console.WriteLine("onPickup - scrpit:");
-                                string[] scripts = (item.onPickUp == null) ? new string[] { "no script" } : item.onPickUp.Split(new char[] { '-' });
+                                string[] scripts = (item[0].onPickUp == null) ? new string[] { "no script" } : item[0].onPickUp.Split(new char[] { '-' });
                                 foreach (string s in scripts)
                                 {
                                     Console.WriteLine(s);
@@ -491,7 +504,13 @@ namespace TextAdventure
                     break;
                 case "quest":
                     Quest quest = null;
-                    if (args.Length == 3) quest = Array.Find(questMaster.quests, q => q.name == args[2]);
+                    if (args.Length == 3)
+                    {
+                        if (args[2].StartsWith("@ID_"))
+                            quest = Array.Find(questMaster.quests, q => "@ID_" + q.ID == args[2]);
+                        else
+                            quest = Array.Find(questMaster.quests, q => q.name == args[2]);
+                    }
                     switch (args[1])
                     {
                         case "complete":
@@ -730,6 +749,7 @@ namespace TextAdventure
                                 questMaster.quests = quests.ToArray();
                                 locMaster.locations = locs.ToArray();
                                 itemMaster.allItems = items.ToArray();
+                                itemMaster.initialiseDict();
                                 npcMaster.npcs = npcs.ToArray();
                                 diaMaster.dialogues = dias.ToArray();
                             }
@@ -737,7 +757,7 @@ namespace TextAdventure
                         case "save":
                             if (args.Length == 3)
                             {
-                                Directory.CreateDirectory(Path.Combine(PathBase, "output", args[2]));
+                                Directory.CreateDirectory(Path.Combine(PathBase, "input", args[2]));
                                 File.WriteAllText(Path.Combine(PathBase, "input", args[2], "quests.json"), Newtonsoft.Json.JsonConvert.SerializeObject(questMaster.quests, Newtonsoft.Json.Formatting.Indented));
                                 File.WriteAllText(Path.Combine(PathBase, "input", args[2], "locations.json"), Newtonsoft.Json.JsonConvert.SerializeObject(locMaster.locations, Newtonsoft.Json.Formatting.Indented));
                                 File.WriteAllText(Path.Combine(PathBase, "input", args[2], "items.json"), Newtonsoft.Json.JsonConvert.SerializeObject(itemMaster.allItems, Newtonsoft.Json.Formatting.Indented));
@@ -758,7 +778,7 @@ namespace TextAdventure
                     switch(args[1])
                     {
                         case "change":
-                            npc = Array.Find(npcMaster.npcs, n => n.name == args[3]);
+                            npc = Array.Find(npcMaster.npcs, n => n.name == args[3]) ?? Array.Find(npcMaster.npcs, n => "@ID_" +n.ID == args[2]);
                             if (npc == null)
                             {
                                 Console.WriteLine("npc not found: " + args[3]);
@@ -767,7 +787,7 @@ namespace TextAdventure
                             switch (args[2])
                             {
                                 case "location":
-                                    Location locChange = Array.Find(locMaster.locations, l => l.name == args[4]);
+                                    Location locChange = Array.Find(locMaster.locations, l => l.name == args[4]) ?? Array.Find(locMaster.locations, l => "@ID_" + l.ID == args[4]);
                                     if (locChange != null)
                                     {
                                         npc.currLoc = locChange.name;
@@ -778,10 +798,10 @@ namespace TextAdventure
                                     }
                                     break;
                                 case "initial_dialogue":
-                                    Dialogue diaChange = Array.Find(diaMaster.dialogues, d => d.name == args[4]);
+                                    Dialogue diaChange = Array.Find(diaMaster.dialogues, d => "@ID_" + d.ID == args[4]);
                                     if (diaChange != null)
                                     {
-                                        npc.initialDialogue = diaChange.name;
+                                        npc.initialDialogue = "@ID_" + diaChange.ID;
                                     }
                                     else
                                     {
@@ -797,10 +817,10 @@ namespace TextAdventure
                             }
                             break;
                         case "kill":
-                            npc = npc = Array.Find(npcMaster.npcs, n => n.name == args[2]);
+                            npc = Array.Find(npcMaster.npcs, n => n.name == args[2]) ?? Array.Find(npcMaster.npcs, n => "@ID_" + n.ID == args[2]);
                             if (npc == null)
                             {
-                                Console.WriteLine("npc not found: " + args[3]);
+                                Console.WriteLine("npc not found: " + args[2]);
                                 return;
                             }
                             List<NPC> tempList = npcMaster.npcs.ToList<NPC>();
@@ -808,6 +828,19 @@ namespace TextAdventure
                             npcMaster.graveyard.Add(npc);
                             npcMaster.npcs = tempList.ToArray();
                             Console.WriteLine("killed: " + npc.name);
+                            break;
+                        case "resurrect":
+                            npc = npcMaster.graveyard.Find(n => n.name == args[2]) ?? npcMaster.graveyard.Find(n => "@ID_" + n.ID == args[2]);
+                            if (npc == null)
+                            {
+                                Console.WriteLine("npc not found: " + args[2]);
+                                return;
+                            }
+                            List < NPC > bla = npcMaster.npcs.ToList();
+                            bla.Add(npc);
+                            npcMaster.npcs = bla.ToArray();
+                            npcMaster.graveyard.Remove(npc);
+                            Console.WriteLine("npc resurrected: " + args[2]); 
                             break;
                         case "help":
                             Console.WriteLine("avaiable parameters: change+x, kill+1");
